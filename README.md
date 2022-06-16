@@ -11,7 +11,7 @@ It has the disadvantage of being not an open standard (but it is at least royalt
 ## todo
 
 - [X] ~~basic scaffolding~~
-- [ ] proof of concept: send a static 128x64 test card from norns
+- [X] ~~proof of concept: send a static 128x64 test card from norns~~
 - [ ] mvp: send a screen buffer from a manual lua call in `redraw()`
 - [ ] stretch: send screen buffer automatically on every update (likely will require core changes to add a new mod hook for screen pre-draw)
 - [ ] documentation & demo video
