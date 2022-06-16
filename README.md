@@ -25,4 +25,8 @@ to build and copy into ~/dust/code:
 * https://github.com/ngwese/norns-event-demo
 * https://github.com/raspberry-pi-camera/raspindi
 
+## license and copyright
 
+NDI is a trademark of NewTek and the NDI SDK is copyrighted by NewTek. It is included here (in `deps/ndi`) under the terms of the [NDI SDK License Agreement](https://233b1d13b450eb6b33b4-ac2a33202ef9b63045cbb3afca178df8.ssl.cf1.rackcdn.com/license/NDI-SDK-License-Agreement-2019.pdf). The NDI source headers are licensed with [The MIT License](https://mit-license.org/).
+
+The rest of this repo is licensed under [version 3 of the GPL](https://www.gnu.org/licenses/gpl-3.0.en.html).
