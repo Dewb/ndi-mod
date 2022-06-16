@@ -8,6 +8,14 @@ NDI has the advantages of easy discovery and configuration in popular tools like
 
 It has the disadvantage of being not an open standard (but it is at least royalty-free.)
 
+## todo
+
+- [X] basic scaffolding
+- [ ] proof of concept: send a static 120x64 test card from norns
+- [ ] mvp: send a screen buffer from a manual lua call in `redraw()`
+- [ ] stretch: send screen buffer automatically on every update (likely will require core changes to add a new mod hook for screen pre-draw)
+- [ ] documentation & demo video
+
 ## how to use
 
 *TODO: instructions for end user install. goals: no external dependencies via apt/etc., installable via maiden ;install command*
