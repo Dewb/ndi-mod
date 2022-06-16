@@ -1,10 +1,10 @@
-#ifndef __LUA_EVENT_DEMO_H__
-#define __LUA_EVENT_DEMO_H__
+#ifndef __NDI_MOD_H__
+#define __NDI_MOD_H__
 
-#define LUA_EVENT_DEMO_VERSION "0.1"
+#define NDI_MOD_VERSION "0.1"
 
-#ifndef LUA_EVENT_DEMO_API
-#define LUA_EVENT_DEMO_API __attribute__ ((visibility ("default")))
+#ifndef NDI_MOD_API
+#define NDI_MOD_API __attribute__ ((visibility ("default")))
 #endif
 
 extern "C" {
@@ -12,7 +12,7 @@ extern "C" {
 #include "lua.h"
 #include "lauxlib.h"
 
-LUA_EVENT_DEMO_API int luaopen_ndi_mod(lua_State *L);
+NDI_MOD_API int luaopen_ndi_mod(lua_State *L);
 
 } // extern "C"
 

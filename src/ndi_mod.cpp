@@ -15,6 +15,8 @@ extern "C" {
 #include "event_types.h"
 #include "event_custom.h"
 #include "events.h"
+#include "hardware/screen.h"
+#include <cairo.h>
 }
 
 static bool quitting = false;
@@ -24,44 +26,6 @@ static bool running = false;
 
 NDIlib_send_instance_t send_instance = NULL;
 NDIlib_video_frame_v2_t ndi_norns_frame;
-
-
-//
-// custom event and behavior
-//
-
-static int _report(lua_State *lvm, int status) {
-    // if pcall was not successful print the error and pop it off the stack to
-    // prevent overflow
-    if (status != LUA_OK) {
-        const char *msg = lua_tostring(lvm, -1);
-        lua_writestringerror("%s\n", msg);
-        lua_pop(lvm, 1);
-    }
-    return status;
-}
-
-static void ndi_mod_weave_op(lua_State *lvm, void *value, void *context) {
-    uint32_t *cp = static_cast<uint32_t*>(value);
-    std::cout << "weave_op: called, counter = " << *cp << std::endl;
-
-    // call a global lua function with current counter value
-    lua_getglobal(lvm, "ndi_mod_handler");
-    lua_pushinteger(lvm, *cp);
-    _report(lvm, lua_pcall(lvm, 1, 0, 0)); // one argument, zero results, default error message
-}
-
-static void ndi_mod_free_op(void *value, void *context) {
-    // nothing to do here since value is just a pointer to the global counter
-    uint32_t *cp = static_cast<uint32_t*>(value);
-    std::cout << "free_op: called" << std::endl;
-}
-
-static struct event_custom_ops ndi_mod_ops = {
-    .type_name = "ndi_mod",
-    .weave = &ndi_mod_weave_op,
-    .free = &ndi_mod_free_op,
-};
 
 
 static int ndi_mod_start(lua_State *L) {
@@ -95,6 +59,7 @@ static int ndi_mod_start(lua_State *L) {
         ndi_norns_frame.p_data = (uint8_t*)malloc(ndi_norns_frame.line_stride_in_bytes * ndi_norns_frame.yres);
         memset(ndi_norns_frame.p_data, 0, ndi_norns_frame.line_stride_in_bytes * ndi_norns_frame.yres);
 
+        std::cout << "NDI server initialized";
         running = true;
     }
 
@@ -113,6 +78,7 @@ static int ndi_mod_stop(lua_State *L) {
         NDIlib_send_destroy(send_instance);
         NDIlib_destroy();
 
+        std::cout << "NDI server stopped";
         running = false;
     }
 
@@ -121,7 +87,7 @@ static int ndi_mod_stop(lua_State *L) {
 
 static int ndi_mod_update(lua_State *L) {
     if (running) {
-        uint8_t img[] = {
+        /*uint8_t img[] = {
             0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0,
             0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0,
             0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0,
@@ -132,6 +98,18 @@ static int ndi_mod_update(lua_State *L) {
             0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0,
         };
         memcpy(ndi_norns_frame.p_data, img, 64);
+        */
+
+        // this is probably not safe
+        // current context is not guaranteed to be the primary context
+        cairo_t* ctx = (cairo_t*)screen_context_get_current();
+        cairo_surface_t* surface = cairo_get_target(ctx);
+        cairo_surface_flush(surface);
+        unsigned char* data = cairo_image_surface_get_data(surface);
+        if (data != NULL) {
+            memcpy(ndi_norns_frame.p_data, data, 128*64*4);
+        }
+
         NDIlib_send_send_video_async_v2(send_instance, &ndi_norns_frame);
     }
     return 0;
@@ -152,7 +130,7 @@ static luaL_Reg func[] = {
     {NULL, NULL}
 };
 
-LUA_EVENT_DEMO_API int luaopen_ndi_mod(lua_State *L) {
+NDI_MOD_API int luaopen_ndi_mod(lua_State *L) {
     lua_newtable(L);
 
     for (int i = 0; mod[i].name; i++) {
@@ -162,7 +140,7 @@ LUA_EVENT_DEMO_API int luaopen_ndi_mod(lua_State *L) {
     luaL_setfuncs(L, func, 0);
 
     lua_pushstring(L, "VERSION");
-    lua_pushstring(L, LUA_EVENT_DEMO_VERSION);
+    lua_pushstring(L, NDI_MOD_VERSION);
     lua_rawset(L, -3);
 
     return 1;

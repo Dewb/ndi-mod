@@ -26,9 +26,13 @@ set_target_properties(lua-extension PROPERTIES
 
 set(NORNS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dep/norns")
 set(NDI_SDK_DIR "${CMAKE_SOURCE_DIR}/dep/ndi")
-target_include_directories(lua-extension PUBLIC "${NORNS_SOURCE_DIR}/matron/src")
-target_include_directories(lua-extension PUBLIC "${NDI_SDK_DIR}/include")
-target_include_directories(lua-extension PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
+target_include_directories(lua-extension PUBLIC
+  "${NORNS_SOURCE_DIR}/matron/src"
+  "${NDI_SDK_DIR}/include"
+  "${CMAKE_CURRENT_SOURCE_DIR}"
+  "/usr/include/cairo"
+)
 
 target_link_directories(lua-extension PUBLIC
   "${NDI_SDK_DIR}/lib"
