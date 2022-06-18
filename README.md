@@ -18,18 +18,19 @@ It has the disadvantage of being not an open standard (but it is at least royalt
 
 ## how to use
 
-#### installing
+### installing
 
 *TODO: instructions for end user install. goals: no external dependencies via apt/etc., installable via maiden ;install command*
 
 temporary installation & usage:
 * you must build from source, see next section
+* enable the mod: go to SYSTEM > MODS in the norns menu, scroll to NDI-MOD, and turn enc 3 clockwise to add a + next to the mod. Hit button 2 to back out and select SYSTEM > RESTART to relaunch with the mod loaded.
 * call `ndi_mod.start()` in `init()` (or at the maiden console)
 * call `ndi_mod.update()` in `redraw()` (or at the maiden console) to send the current screen surface as a NDI frame
 
 beware: this is a proof of concept, does not work reliably yet!
 
-#### viewing NDI output on your desktop (PC/Mac/Linux)
+### viewing NDI output on your desktop (PC/Mac/Linux)
 
 The NDI Studio Monitor tool included in NDI Tools can view and record NDI streams.
 
@@ -37,7 +38,7 @@ The NDI Studio Monitor tool included in NDI Tools can view and record NDI stream
 2. Run the NDI Studio Monitor and click the three-lines icon in the upper left corner.
 3. You should see NORNS in the sources list, click it and select "norns screen" from the flyout.
 
-#### using with OBS Studio (PC/Mac/Linux)
+### using with OBS Studio (PC/Mac/Linux)
 
 OBS Studio is a great open-source tool for streaming or recording video from a variety of sources at once.
 
@@ -53,7 +54,7 @@ OBS Studio is a great open-source tool for streaming or recording video from a v
    * click Filters, click the plus under Effect Filters, and choose Luma Key
    * Set Luma Max to 1.0, Luma Min to 0.002, and both Smooth values to 0.0.
 
-#### using with Resolume Avenue/Arena
+### using with Resolume Avenue/Arena
 
 1. Start Resolume. If you get a firewall prompt (Windows) allow Resolume to contact devices on the local network.
 2. Scroll to the end of the Sources tab; you should see NORNS listed under the NDI SERVERS heading. Drag it into a clip.
@@ -61,7 +62,7 @@ OBS Studio is a great open-source tool for streaming or recording video from a v
    * To overlay the norns screen over other video, add an Auto Mask effect to the norns screen clip and set the Contrast all the way up to 1. A Bright.Contrast effect before and/or after Auto Mask will allow you to fine tune the results.
    * To get an "animated text" effect, put the norns screen clip in a layer set to the 50 Mask blend mode. Again, a Bright.Contrast effect will allow you to tune the results.
 
-#### using with mobile devices
+### using with mobile devices
 
 *iOS*
 * Install [NDI Monitor by Sienna/Mark Gilbert](https://apps.apple.com/us/app/ndi-monitor/id1196221514) from the App Store ($9.99).
