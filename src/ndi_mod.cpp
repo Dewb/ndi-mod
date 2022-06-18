@@ -1,7 +1,6 @@
 #include "ndi_mod.h"
 
 #include <chrono>
-#include <thread>
 #include <iostream>
 #include <cstring>
 
@@ -12,9 +11,6 @@
 
 extern "C" {
 // matron
-#include "event_types.h"
-#include "event_custom.h"
-#include "events.h"
 #include "hardware/screen.h"
 #include <cairo.h>
 }
@@ -62,7 +58,6 @@ static int ndi_mod_start(lua_State *L) {
         std::cout << "NDI server initialized";
         running = true;
     }
-
 
     return 0;
 }
