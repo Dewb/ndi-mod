@@ -24,19 +24,20 @@ set_target_properties(lua-extension PROPERTIES
   OUTPUT_NAME "${LUA_MODULE_NAME}"
 )
 
-set(NORNS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dep/norns")
+set(NORNS_SOURCE_PATH "${CMAKE_SOURCE_DIR}/dep/norns")
 
 target_include_directories(lua-extension PUBLIC
-  "${NORNS_SOURCE_DIR}/matron/src"
-  "${NDI_SDK_DIR}/include"
+  "${NORNS_SOURCE_PATH}/matron/src"
+  "${NDI_SDK_PATH}/include"
   "${CMAKE_CURRENT_SOURCE_DIR}"
   "/usr/include/cairo"
 )
 
 target_link_directories(lua-extension PUBLIC
-  "${NDI_SDK_DIR}/lib"
+  "${NDI_SDK_PATH}/lib"
 )
 
 target_link_libraries(lua-extension PUBLIC
   ndi
 )
+
