@@ -25,7 +25,6 @@ set_target_properties(lua-extension PROPERTIES
 )
 
 set(NORNS_SOURCE_DIR "${CMAKE_SOURCE_DIR}/dep/norns")
-set(NDI_SDK_DIR "${CMAKE_SOURCE_DIR}/dep/ndi")
 
 target_include_directories(lua-extension PUBLIC
   "${NORNS_SOURCE_DIR}/matron/src"

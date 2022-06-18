@@ -7,6 +7,7 @@ add_subdirectory(src)
 # packaging for the mod (this could be much improved)
 
 set(MOD_OUTPUT_PATH "${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}")
+set(NDI_SDK_PATH "${CMAKE_SOURCE_DIR}/dep/ndi")
 
 add_custom_target(copy-mod ALL COMMAND
     ${CMAKE_COMMAND} -E copy_directory
@@ -15,7 +16,8 @@ add_custom_target(copy-mod ALL COMMAND
 )
 
 add_custom_target(copy-extension ALL COMMAND
-    ${CMAKE_COMMAND} -E copy $<TARGET_FILE:lua-extension> "${MOD_OUTPUT_PATH}/lib/"
+    ${CMAKE_COMMAND} -E copy $<TARGET_FILE:lua-extension> "${MOD_OUTPUT_PATH}/lib/" &&
+    ${CMAKE_COMMAND} -E copy "${NDI_SDK_PATH}/lib/*" "${MOD_OUTPUT_PATH}/lib/"
 )
 add_dependencies(copy-extension copy-mod)
 

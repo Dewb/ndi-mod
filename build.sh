@@ -1,3 +1,3 @@
 mkdir -pv build && cd build
 cmake ..
-make install-dust
+make install-dust install-zip
