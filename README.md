@@ -1,21 +1,28 @@
 ## ndi-mod for norns
 
-norns system mod to share the screen via the [NDI](https://streamgeeks.us/what-is-ndi/) streaming video protocol.
+norns system mod to share the screen via the [NDI](https://streamgeeks.us/what-is-ndi/) 
+streaming video protocol.
 
 ## why ndi / why not ndi?
 
-NDI is fast and supports easy discovery and configuration in popular tools like [OBS Studio](https://obsproject.com/) and [Resolume](https://resolume.com/).
+NDI is fast, and supports easy discovery of stream sources. Support for NDI is built in
+or available via plugin in several popular streaming and VJ tools like [OBS Studio](https://obsproject.com/)
+and [Resolume](https://resolume.com/).
 
 It has the disadvantage of being not an open standard (but it is at least royalty-free.)
+
+In low-latency mode, a NDI stream over the local network is less than a frame behind the norns screen. So far, in informal testing with a Pi CM3+ factory norns, using this mod increases the CPU load by just 1-2%.
+
+Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain purposes and the general structure of this mod could be adapted to other protocols. 
 
 ## todo
 
 - [X] ~~basic scaffolding~~
 - [X] ~~proof of concept: send a static 128x64 test card from norns~~
 - [X] ~~mvp: send a screen buffer from a manual lua call in `redraw()`~~
-- [X] ~~send screen buffer automatically on every script redraw
-- [ ] stretch: catch every update including menus (partial success, grabs menus after first script load. might need new mod hook?)
-- [X] documentation
+- [X] ~~send screen buffer automatically on every script redraw~~
+- [X] ~~stretch: catch every update including menus (partial success, grabs menus after first script load. might need new mod hook?)~~
+- [X] ~~documentation~~
 - [ ] demo video
 
 ## how to use
@@ -27,14 +34,8 @@ It has the disadvantage of being not an open standard (but it is at least royalt
    ;install https://github.com/Dewb/ndi-mod/releases/download/latest/ndi-mod.zip
    ```
 2. In the norns menu, navigate to to **SYSTEM > MODS**, scroll to **NDI-MOD**, and turn enc 3
-   clockwise to add a `+` next to the mod name. Hit button 2 to back out and select
+   clockwise to add a `+` next to the mod name. Hit button 2 to back out, and select
    **SYSTEM > RESTART** to relaunch with the mod loaded.
-
-beware: this is a proof of concept, does not work reliably yet!
-
-temporary requirement: manual invocation from script:
-* call `ndi_mod.start()` in `init()` (or at the maiden console)
-* call `ndi_mod.update()` in `redraw()` (or at the maiden console) to send the current screen surface as a NDI frame
 
 ### viewing NDI output on your desktop (PC/Mac/Linux)
 
@@ -45,8 +46,6 @@ The NDI Studio Monitor tool included in NDI Tools can view and record NDI stream
 3. You should see **NORNS** in the sources list, click it and select **norns screen** from the flyout.
 
 ### using with OBS Studio (PC/Mac/Linux)
-
-OBS Studio is a great open-source tool for streaming or recording video from a variety of sources at once.
 
 1. Install [OBS Studio](https://obsproject.com/).
 2. Install the [NDI plugin for OBS Studio](https://github.com/Palakis/obs-ndi/releases).
@@ -64,7 +63,7 @@ Tips:
 * In the **Properties** for the NDI source, try changing **Latency Mode** to **Low (experimental)**.
 * Add a **Color Correction** filter and adjust **Gamma**, **Brightness**, and **Color Add** to adjust the color palette of the graphics.
 
-### using with Resolume Avenue/Arena
+### using with Resolume Avenue/Arena (PC/Mac)
 
 1. Start Resolume. If you get a firewall prompt (Windows) allow Resolume to contact devices on the local network.
 2. Scroll to the end of the **Sources** tab; you should see **NORNS** listed under the **NDI SERVERS** heading. Drag it into a clip.
@@ -83,7 +82,16 @@ Tips:
 *Android*
 * No known solution yet
 
-## building from source
+## advanced usage
+
+### control via maiden and scripts
+
+When the mod is active, the NDI server is always running and sending video. You can customize the behavior with the following Lua methods:
+* `ndi_mod.stop()` will stop sending video
+* `ndi_mod.start()` will start sending video
+* `ndi_mod.send_frame()` will send a single frame, regardless of the start/stop state
+
+### building from source
 
 to build and copy into ~/dust/code:
 
