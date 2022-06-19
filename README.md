@@ -1,20 +1,20 @@
 # ndi-mod for norns
 
-norns system mod to share the screen via the [NDI](https://streamgeeks.us/what-is-ndi/) 
+a [norns](https://monome.org/norns) mod to share the screen in near-real-time via the [NDI](https://streamgeeks.us/what-is-ndi/) 
 streaming video protocol.
 
 <img src="https://user-images.githubusercontent.com/712405/174466864-cbf723bb-a657-4dab-bdf0-572e31b3e7ab.png" width=600>
 
 ## why ndi / why not ndi?
 
-NDI is fast, and supports easy discovery of stream sources. Support for discovering and receiving NDI streams is built in
-or available via plugin in several popular streaming and video art tools like [OBS Studio](https://obsproject.com/), 
-[Resolume](https://resolume.com/), [Touch Designer](https://derivative.ca/UserGuide/NDI), and 
-[Max/MSP/Jitter](https://github.com/pixsper/jit.ndi).
+NDI is fast, and includes zeroconf-based discovery of stream sources. Many popular streaming and video art tools support discovering and receiving NDI streams, including [OBS Studio](https://obsproject.com/)\*, 
+[Resolume](https://resolume.com/), [Touch Designer](https://derivative.ca/UserGuide/NDI), and [Max/MSP/Jitter](https://github.com/pixsper/jit.ndi)\*.
 
-It has the disadvantage of being not an open standard (but it is at least royalty-free.)
+(*\* requires a plugin*)
 
-In low-latency mode, a NDI stream over the local network is less than a frame behind the norns screen. So far, in informal testing with a Pi CM3+ factory norns, using this mod increases the CPU load by just 1-2%.
+Using NDI's standard latency mode, a stream over a local wi-fi network is about a frame behind the norns screen. So far, in informal testing with a Pi CM3+ factory norns, using this mod appears to increase the CPU load by just 1-2%. When using clients like OBS that support NDI's optional low-latency mode, the network update can be almost simultaneous with the norns screen update.
+
+One disadvantage of NDI is that it's not a completely open, unencumbered standard (but it is at least royalty-free.)
 
 Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain purposes and the general structure of this mod could be adapted to other protocols. 
 
@@ -29,6 +29,8 @@ Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain p
 2. In the norns menu, navigate to to **SYSTEM > MODS**, scroll to **NDI-MOD**, and turn enc 3
    clockwise to add a `+` next to the mod name. Hit button 2 to back out, and select
    **SYSTEM > RESTART** to relaunch with the mod loaded.
+   
+This will add about 6MB of files to `~/dust/code/ndi-mod`. To uninstall everything, go to the maiden library, scroll to `ndi-mod` in the installed section, and click **remove**.
 
 ### viewing NDI output on your desktop (PC/Mac/Linux)
 
@@ -69,17 +71,27 @@ Tips:
 
 <img src="https://user-images.githubusercontent.com/712405/174467144-db6121e9-5bfe-4919-b2a0-fdb45b3ec37f.png" width=600>
 
+### using with Touch Designer
+
+TBD. Start here: https://derivative.ca/UserGuide/NDI
+
+### using with Max/MSP/Jitter
+
+TBD. Start here: https://github.com/pixsper/jit.ndi
+
 ### using with mobile devices
 
 *iOS*
-* Install [NDI Monitor by Sienna/Mark Gilbert](https://apps.apple.com/us/app/ndi-monitor/id1196221514) from the App Store ($9.99).
-* Run it and grant permissions to contact devices on your network.
-* Select **NORNS** from the list of detected sources.
+
+1. Install [NDI Monitor by Sienna/Mark Gilbert](https://apps.apple.com/us/app/ndi-monitor/id1196221514) from the App Store ($9.99).
+2. Run it and grant permissions to contact devices on your network.
+3. Select **NORNS** from the list of detected sources.
 
 ![image](https://user-images.githubusercontent.com/712405/174466657-bc22a195-f5f0-4721-bdcf-acd55813ff5d.png)
 
 *Android*
-* No known solution yet
+
+TBD, No known solution yet
 
 ## advanced usage
 
