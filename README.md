@@ -1,7 +1,9 @@
-## ndi-mod for norns
+# ndi-mod for norns
 
 norns system mod to share the screen via the [NDI](https://streamgeeks.us/what-is-ndi/) 
 streaming video protocol.
+
+<img src="https://user-images.githubusercontent.com/712405/174466864-cbf723bb-a657-4dab-bdf0-572e31b3e7ab.png" width=600>
 
 ## why ndi / why not ndi?
 
@@ -15,19 +17,9 @@ In low-latency mode, a NDI stream over the local network is less than a frame be
 
 Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain purposes and the general structure of this mod could be adapted to other protocols. 
 
-## todo
+# how to use
 
-- [X] ~~basic scaffolding~~
-- [X] ~~proof of concept: send a static 128x64 test card from norns~~
-- [X] ~~mvp: send a screen buffer from a manual lua call in `redraw()`~~
-- [X] ~~send screen buffer automatically on every script redraw~~
-- [X] ~~stretch: catch every update including menus (partial success, grabs menus after first script load. might need new mod hook?)~~
-- [X] ~~documentation~~
-- [ ] demo video
-
-## how to use
-
-### installing
+### installing and activating
 
 1. From the maiden console, enter:
    ```
@@ -63,7 +55,9 @@ Tips:
 * In the **Properties** for the NDI source, try changing **Latency Mode** to **Low (experimental)**.
 * Add a **Color Correction** filter and adjust **Gamma**, **Brightness**, and **Color Add** to adjust the color palette of the graphics.
 
-### using with Resolume Avenue/Arena (PC/Mac)
+<img src="https://user-images.githubusercontent.com/712405/174466636-d860d066-bd27-47da-b93f-035291ee5ab8.png" width=600>
+
+## using with Resolume Avenue/Arena (PC/Mac)
 
 1. Start Resolume. If you get a firewall prompt (Windows) allow Resolume to contact devices on the local network.
 2. Scroll to the end of the **Sources** tab; you should see **NORNS** listed under the **NDI SERVERS** heading. Drag it into a clip.
@@ -72,12 +66,16 @@ Tips:
    * To overlay the norns screen over other video, add an **Auto Mask** effect to the norns screen clip and set the **Contrast** all the way up to 1. A **Bright.Contrast** effect before and/or after **Auto Mask** will allow you to fine tune the results.
    * To get an "animated text" effect, put the norns screen clip in a layer set to the **50 Mask** blend mode. Again, adding a **Bright.Contrast** effect to the clip will allow you to tune the results.
 
+<img src="https://user-images.githubusercontent.com/712405/174467144-db6121e9-5bfe-4919-b2a0-fdb45b3ec37f.png" width=600>
+
 ### using with mobile devices
 
 *iOS*
 * Install [NDI Monitor by Sienna/Mark Gilbert](https://apps.apple.com/us/app/ndi-monitor/id1196221514) from the App Store ($9.99).
 * Run it and grant permissions to contact devices on your network.
 * Select **NORNS** from the list of detected sources.
+
+![image](https://user-images.githubusercontent.com/712405/174466657-bc22a195-f5f0-4721-bdcf-acd55813ff5d.png)
 
 *Android*
 * No known solution yet
@@ -99,13 +97,14 @@ to build and copy into ~/dust/code:
 ./build.sh
 ```
 
-## references/thanks
+# references/thanks
 
 * https://github.com/ngwese/norns-event-demo
 * https://github.com/raspberry-pi-camera/raspindi
 
-## license and copyright
+# license and copyright
 
 NDI is a trademark of NewTek and the NDI SDK is copyrighted by NewTek. It is included here (in `deps/ndi`) under the terms of the [NDI SDK License Agreement](https://233b1d13b450eb6b33b4-ac2a33202ef9b63045cbb3afca178df8.ssl.cf1.rackcdn.com/license/NDI-SDK-License-Agreement-2019.pdf). The NDI source headers are licensed with [The MIT License](https://mit-license.org/).
 
 The rest of this repo is licensed under [version 3 of the GPL](https://www.gnu.org/licenses/gpl-3.0.en.html).
+
