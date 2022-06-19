@@ -1,4 +1,4 @@
-## ndi-mod for norns
+# ndi-mod for norns
 
 norns system mod to share the screen via the [NDI](https://streamgeeks.us/what-is-ndi/) 
 streaming video protocol.
@@ -17,19 +17,9 @@ In low-latency mode, a NDI stream over the local network is less than a frame be
 
 Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain purposes and the general structure of this mod could be adapted to other protocols. 
 
-## todo
+# how to use
 
-- [X] ~~basic scaffolding~~
-- [X] ~~proof of concept: send a static 128x64 test card from norns~~
-- [X] ~~mvp: send a screen buffer from a manual lua call in `redraw()`~~
-- [X] ~~send screen buffer automatically on every script redraw~~
-- [X] ~~stretch: catch every update including menus (partial success, grabs menus after first script load. might need new mod hook?)~~
-- [X] ~~documentation~~
-- [ ] demo video
-
-## how to use
-
-### installing
+### installing and activating
 
 1. From the maiden console, enter:
    ```
@@ -67,7 +57,7 @@ Tips:
 
 <img src="https://user-images.githubusercontent.com/712405/174466636-d860d066-bd27-47da-b93f-035291ee5ab8.png" width=600>
 
-### using with Resolume Avenue/Arena (PC/Mac)
+## using with Resolume Avenue/Arena (PC/Mac)
 
 1. Start Resolume. If you get a firewall prompt (Windows) allow Resolume to contact devices on the local network.
 2. Scroll to the end of the **Sources** tab; you should see **NORNS** listed under the **NDI SERVERS** heading. Drag it into a clip.
@@ -107,12 +97,12 @@ to build and copy into ~/dust/code:
 ./build.sh
 ```
 
-## references/thanks
+# references/thanks
 
 * https://github.com/ngwese/norns-event-demo
 * https://github.com/raspberry-pi-camera/raspindi
 
-## license and copyright
+# license and copyright
 
 NDI is a trademark of NewTek and the NDI SDK is copyrighted by NewTek. It is included here (in `deps/ndi`) under the terms of the [NDI SDK License Agreement](https://233b1d13b450eb6b33b4-ac2a33202ef9b63045cbb3afca178df8.ssl.cf1.rackcdn.com/license/NDI-SDK-License-Agreement-2019.pdf). The NDI source headers are licensed with [The MIT License](https://mit-license.org/).
 
