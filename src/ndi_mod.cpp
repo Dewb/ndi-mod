@@ -1,6 +1,5 @@
 #include "ndi_mod.h"
 
-#include <chrono>
 #include <iostream>
 #include <cstring>
 
@@ -24,9 +23,18 @@ static bool running = false;
 static bool initialized = false;
 static bool failed = false;
 
+#ifdef RATE_LIMITING
+struct timespec last_frame_time;
+#define MIN_FRAME_TIME (16700000-1)
+#endif
+
 static int ndi_mod_init(lua_State *L) {
 
     if (!initialized && !failed) {
+
+#ifdef RATE_LIMITING
+        clock_gettime(CLOCK_MONOTONIC, &last_frame_time);
+#endif
 
         if (!NDIlib_initialize()) {
             std::cerr << "Error initializing NDI library";
@@ -48,10 +56,16 @@ static int ndi_mod_init(lua_State *L) {
             }
         }
 
+        // norns screen size: 128x64
         ndi_norns_frame.xres = 128;
         ndi_norns_frame.yres = 64;
+
+        // video format: 30fps RGBA progressive (with alpha ignored)
+        ndi_norns_frame.frame_rate_N = 30000;
+        ndi_norns_frame.frame_rate_D = 1000;
         ndi_norns_frame.FourCC = NDIlib_FourCC_type_RGBX;
         ndi_norns_frame.frame_format_type = NDIlib_frame_format_type_progressive;
+
         ndi_norns_frame.line_stride_in_bytes = ndi_norns_frame.xres * 4 * sizeof(uint8_t);
         ndi_norns_frame.p_data = (uint8_t*)malloc(ndi_norns_frame.line_stride_in_bytes * ndi_norns_frame.yres);
         memset(ndi_norns_frame.p_data, 0, ndi_norns_frame.line_stride_in_bytes * ndi_norns_frame.yres);
@@ -88,6 +102,17 @@ static int ndi_mod_send_frame(lua_State *L) {
     ndi_mod_init(L);
 
     if (initialized && !failed) {
+
+#ifdef RATE_LIMITING
+        // rate limit in case script is triggering updates at an interval much faster than the screen refresh
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        if ((now.tv_sec == (1 + last_frame_time.tv_sec) && (1000000000 - last_frame_time.tv_nsec + now.tv_nsec) < MIN_FRAME_TIME ) ||
+            (now.tv_sec == last_frame_time.tv_sec && (now.tv_nsec - last_frame_time.tv_nsec) < MIN_FRAME_TIME )) {
+            return 0;
+        }
+        last_frame_time = now;
+#endif
 
         // this is questionable -- is current context guaranteed to be the primary context?
         cairo_t* ctx = (cairo_t*)screen_context_get_current();
