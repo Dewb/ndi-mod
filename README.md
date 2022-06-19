@@ -41,10 +41,10 @@ The NDI Studio Monitor tool included in NDI Tools can view and record NDI stream
 
 1. Install [OBS Studio](https://obsproject.com/).
 2. Install the [NDI plugin for OBS Studio](https://github.com/Palakis/obs-ndi/releases).
-3. The obs-ndi plugin hasn't been updated in a while and can be finicky. Notably, it's built with an older version of the NDI Tools. You may need to *re-install* the OBS 5 tools after running the obs-ndi installer. Try the OBS forums for more advice if you have trouble.
-4. Run OBS Studio. If you get a firewall prompt (Windows) allow OBS to contact devices on the local network.
-5. Click the plus below the **Sources** list to add a new source. **NDI Source** should be in the list. Select it and then hit **OK**.
-6. In the Properties window, click the **Source Name** dropdown and choose **NORNS**.
+3. Install the [the latest NDI Tools](https://ndi.tv/tools/). (NOTE: The Windows installer will install version 4 of the tools, so if you'd already installed them previously you may need to *re-install* NDI 5 after running the plugin installer. If you install the OBS plugin with the Windows .zip build, or the MacOS or Linux builds, you should only need to install the NDI 5 Tools once.)
+5. Run OBS Studio. If you get a firewall prompt (Windows) allow OBS to contact devices on the local network.
+6. Click the plus below the **Sources** list to add a new source. **NDI™ Source** should be in the list. Select it and then hit **OK**.
+7. In the Properties window, click the **Source Name** dropdown and choose **NORNS**.
 8. Hit **OK**. You should see the norns screen show up in the canvas. Click and drag the window and its corner controls to move and resize it.
 
 Tips:
