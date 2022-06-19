@@ -7,7 +7,7 @@ streaming video protocol.
 
 ## why ndi / why not ndi?
 
-NDI is fast, and supports easy discovery of stream sources. Support for NDI is built in
+NDI is fast, and supports easy discovery of stream sources. Support for discovering and receiving NDI streams is built in
 or available via plugin in several popular streaming and video art tools like [OBS Studio](https://obsproject.com/), 
 [Resolume](https://resolume.com/), [Touch Designer](https://derivative.ca/UserGuide/NDI), and 
 [Max/MSP/Jitter](https://github.com/pixsper/jit.ndi).
