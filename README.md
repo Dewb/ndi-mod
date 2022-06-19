@@ -49,10 +49,10 @@ The NDI Studio Monitor tool included in NDI Tools can view and record NDI stream
 
 Tips:
 * Right-click the screen element and set **Scale Filtering** to **Point** to keep your pixels blocky.
+* In the **Properties** window for the NDI source, scroll down to **Latency Mode** and change it to **Low (experimental)**. 
 * If you want to overlay the screen over your webcam or other video sources:
    * Select the source in the **Sources** list, click **Filters**, click the plus under **Effect Filters**, and choose **Luma Key**.
    * Set **Luma Max** to `1.0`, **Luma Min** to `0.002`, and both **Smooth** values to `0.0`.
-* In the **Properties** for the NDI source, try changing **Latency Mode** to **Low (experimental)**.
 * Add a **Color Correction** filter and adjust **Gamma**, **Brightness**, and **Color Add** to adjust the color palette of the graphics.
 
 <img src="https://user-images.githubusercontent.com/712405/174466636-d860d066-bd27-47da-b93f-035291ee5ab8.png" width=600>
