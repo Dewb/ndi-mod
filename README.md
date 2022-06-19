@@ -13,8 +13,8 @@ It has the disadvantage of being not an open standard (but it is at least royalt
 - [X] ~~basic scaffolding~~
 - [X] ~~proof of concept: send a static 128x64 test card from norns~~
 - [X] ~~mvp: send a screen buffer from a manual lua call in `redraw()`~~
-- [ ] send screen buffer automatically on every script redraw
-- [ ] stretch: catch every update including menus (may require a new mod hook?)
+- [X] ~~send screen buffer automatically on every script redraw
+- [ ] stretch: catch every update including menus (partial success, grabs menus after first script load. might need new mod hook?)
 - [X] documentation
 - [ ] demo video
 
