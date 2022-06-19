@@ -13,16 +13,17 @@ mod.hook.register("script_pre_init", "ndi", function()
 
   screen.update_default = function()
     _norns.screen_update()
-    ndi_mod.start()
     ndi_mod.update()
   end
 
   screen.update = screen.update_default
 
+  ndi_mod.start()
+
 end)
 
 mod.hook.register("system_pre_shutdown", "ndi", function()
 
-  ndi_mod.stop()
+  ndi_mod.cleanup()
 
 end)

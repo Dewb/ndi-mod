@@ -21,14 +21,16 @@ NDIlib_send_instance_t send_instance = NULL;
 NDIlib_video_frame_v2_t ndi_norns_frame;
 
 static bool running = false;
+static bool initialized = false;
+static bool failed = false;
 
+static int ndi_mod_init(lua_State *L) {
 
-static int ndi_mod_start(lua_State *L) {
-
-    if (!running) {
+    if (!initialized && !failed) {
 
         if (!NDIlib_initialize()) {
             std::cerr << "Error initializing NDI library";
+            failed = true;
             return 0;
         }
 
@@ -41,6 +43,7 @@ static int ndi_mod_start(lua_State *L) {
         if (!send_instance) {
             send_instance = NDIlib_send_create(&send_create);
             if (!send_instance) {
+                failed = true;
                 std::cerr << "Error creating NDI server";
             }
         }
@@ -54,16 +57,19 @@ static int ndi_mod_start(lua_State *L) {
         memset(ndi_norns_frame.p_data, 0, ndi_norns_frame.line_stride_in_bytes * ndi_norns_frame.yres);
 
         std::cerr << "NDI server initialized";
-        running = true;
+        initialized = true;
     }
 
     return 0;
 }
 
-static int ndi_mod_stop(lua_State *L) {
-    
-    if (running) {
-        running = false;
+static int ndi_mod_cleanup(lua_State *L) {
+
+    running = false;
+
+    if (initialized) {
+        initialized = false;
+
         if (ndi_norns_frame.p_data) {
             free(ndi_norns_frame.p_data);
         }
@@ -77,9 +83,11 @@ static int ndi_mod_stop(lua_State *L) {
     return 0;
 }
 
-static int ndi_mod_update(lua_State *L) {
+static int ndi_mod_send_frame(lua_State *L) {
 
-    if (running) {
+    ndi_mod_init(L);
+
+    if (initialized && !failed) {
 
         // this is questionable -- is current context guaranteed to be the primary context?
         cairo_t* ctx = (cairo_t*)screen_context_get_current();
@@ -103,6 +111,24 @@ static int ndi_mod_update(lua_State *L) {
     return 0;
 }
 
+static int ndi_mod_update(lua_State *L) {
+    if (running) {
+        return ndi_mod_send_frame(L);
+    }
+    return 0;
+}
+
+static int ndi_mod_start(lua_State *L) {
+    running = true;
+    return 0;
+}
+
+static int ndi_mod_stop(lua_State *L) {
+    running = false;
+    return 0;
+}
+
+
 //
 // module definition
 //
@@ -112,9 +138,12 @@ static const luaL_Reg mod[] = {
 };
 
 static luaL_Reg func[] = {
+    {"init", ndi_mod_init},
+    {"cleanup", ndi_mod_cleanup},
+    {"send_frame", ndi_mod_send_frame},
+    {"update", ndi_mod_update},
     {"start", ndi_mod_start},
     {"stop", ndi_mod_stop},
-    {"update", ndi_mod_update},
     {NULL, NULL}
 };
 
