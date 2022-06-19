@@ -8,8 +8,9 @@ streaming video protocol.
 ## why ndi / why not ndi?
 
 NDI is fast, and supports easy discovery of stream sources. Support for NDI is built in
-or available via plugin in several popular streaming and VJ tools like [OBS Studio](https://obsproject.com/)
-and [Resolume](https://resolume.com/).
+or available via plugin in several popular streaming and video art tools like [OBS Studio](https://obsproject.com/), 
+[Resolume](https://resolume.com/), [Touch Designer](https://derivative.ca/UserGuide/NDI), and 
+[Max/MSP/Jitter](https://github.com/pixsper/jit.ndi).
 
 It has the disadvantage of being not an open standard (but it is at least royalty-free.)
 
