@@ -32,18 +32,17 @@ Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain p
    
 This will add about 6MB of files to `~/dust/code/ndi-mod`. To uninstall everything, go to the maiden library, scroll to `ndi-mod` in the installed section, and click **remove**.
 
-## general tips
+### general tips
 
 * norns should show up as "**NORNS** (norns screen)" in any NDI-supporting app or device that can reach norns through the network. NDI 5 support is best, but NDI 4 apps might also be able to connect.
 * If, in any program, you see local NDI sources but you don't see **NORNS**, make sure the app is allowed through any firewalls, and restart the app.
-* 
 
-### viewing NDI output on your desktop (PC/Mac/Linux)
+### viewing NDI output with NDI Studio Monitor (PC/Mac/Linux)
 
-The NDI Studio Monitor tool included in NDI Tools can view and record NDI streams.
+The NDI Studio Monitor tool provided by NewTek can view and record NDI streams.
 
 1. Install the [NDI Tools](https://ndi.tv/tools/). (This requires giving an e-mail address to NewTek.)
-2. Run the NDI Studio Monitor and click the three-lines icon in the upper left corner.
+2. Run NDI Studio Monitor and click the three-lines icon in the upper left corner.
 3. You should see **NORNS** in the sources list, click it and select **norns screen** from the flyout.
 
 ### using with OBS Studio (PC/Mac/Linux)
@@ -59,7 +58,7 @@ The NDI Studio Monitor tool included in NDI Tools can view and record NDI stream
    * To keep your pixels crisp and blocky, right-click the NDI source and set **Scale Filtering** to **Point**.
    * For the best performance, open the **Properties** window for the NDI source, scroll down to **Latency Mode** and change it to **Low (experimental)**. 
 
-Tips:
+**Tips**
 * If you want to overlay the screen over your webcam or other video sources:
    * Select the source in the **Sources** list, click **Filters**, click the plus under **Effect Filters**, and choose **Luma Key**.
    * Set **Luma Max** to `1.0`, **Luma Min** to `0.002`, and both **Smooth** values to `0.0`.
@@ -74,19 +73,20 @@ Tips:
 1. Start Resolume. If you get a firewall prompt (Windows) allow Resolume to contact devices on the local network.
 2. Scroll to the end of the **Sources** tab; you should see **NORNS** listed under the **NDI SERVERS** heading. Drag it into a clip.
 3. For more information, [read the NDI section of the Resolume documentation](https://resolume.com/support/en/NDI_inputs_and_outputs).
-Tips:
+
+**Tips**
    * To overlay the norns screen over other video, add an **Auto Mask** effect to the norns screen clip and set the **Contrast** all the way up to 1. A **Bright.Contrast** effect before and/or after **Auto Mask** will allow you to fine tune the results.
-   * To get an "animated text" effect, put the norns screen clip in a layer set to the **50 Mask** blend mode. Again, adding a **Bright.Contrast** effect to the clip will allow you to tune the results.
+   * To use the norns screen as a key for other video, put the norns screen clip in a layer set to the **50 Mask** blend mode. Again, adding a **Bright.Contrast** effect to the clip will allow you to tune the results.
 
 <img src="https://user-images.githubusercontent.com/712405/174467144-db6121e9-5bfe-4919-b2a0-fdb45b3ec37f.png" width=600>
 
-### using with Max/MSP/Jitter (requires Max 8.2.0 or later)
+### using with Max/MSP/Jitter (PC/Mac, requires Max 8.2.0 or later)
 
 1. Install the [jit.ndi](https://github.com/pixsper/jit.ndi) package following [the instructions in its README](https://github.com/pixsper/jit.ndi#installation).
 2. Run Max. Add a `jit.ndi.receive~` object. Right-click the object and choose **Open jit.ndi.receive~ Help**.
 3. In the help/example patch, follow the numbered instructions to **Select an NDI source** (choose NORNS) and **Toggle on qmetro.** You should see the norns screen in the output object.
 
-### using with Touch Designer (version 2022.20000 or later recommended)
+### using with Touch Designer (PC/Mac, version 2022.20000 or later recommended)
 
 1. Run Touch Designer. Hit **Tab** to add an operator, choose the **TOP** tab, and add an **NDI In** operator. 
 2. If you get a firewall prompt (Windows) allow TD to contact devices on the local network.
