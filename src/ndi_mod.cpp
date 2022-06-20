@@ -185,7 +185,7 @@ static int ndi_mod_stop(lua_State *l) {
 static int ndi_mod_is_running(lua_State *l) {
     lua_check_num_args(0);
     lua_pushboolean(l, running);
-    return 0;
+    return 1;
 }
 
 static int ndi_mod_create_image_sender(lua_State *l) {
