@@ -1,7 +1,7 @@
 #ifndef __NDI_MOD_H__
 #define __NDI_MOD_H__
 
-#define NDI_MOD_VERSION "0.1"
+#define NDI_MOD_VERSION "0.2"
 
 #ifndef NDI_MOD_API
 #define NDI_MOD_API __attribute__ ((visibility ("default")))

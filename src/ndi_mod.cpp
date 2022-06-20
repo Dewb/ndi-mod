@@ -16,7 +16,7 @@ extern "C" {
 
 #include <Processing.NDI.Lib.h>
 
-NDIlib_send_instance_t send_instance = NULL;
+NDIlib_send_instance_t send_instance;
 NDIlib_video_frame_v2_t ndi_norns_frame;
 
 static bool running = false;
@@ -48,29 +48,22 @@ static int ndi_mod_init(lua_State *L) {
         send_create.clock_video = false;
         send_create.clock_audio = false;
 
+        send_instance = NDIlib_send_create(&send_create);
         if (!send_instance) {
-            send_instance = NDIlib_send_create(&send_create);
-            if (!send_instance) {
-                failed = true;
-                std::cerr << "Error creating NDI server";
-            }
+            failed = true;
+            std::cerr << "Error creating NDI sender";
         }
 
-        // norns screen size: 128x64
-        ndi_norns_frame.xres = 128;
-        ndi_norns_frame.yres = 64;
-
-        // video format: 30fps RGBA progressive (with alpha ignored)
+        // NDI video format: 30fps RGBA progressive (with alpha ignored)
+        // norns cairo surface is CAIRO_FORMAT_ARGB32 (premultiplied ARGB), but all four
+        // bytes are always the same, so the RGBA/ARGB misalignment doesn't matter,
+        // and we can use the surface directly.
         ndi_norns_frame.frame_rate_N = 30000;
         ndi_norns_frame.frame_rate_D = 1000;
         ndi_norns_frame.FourCC = NDIlib_FourCC_type_RGBX;
         ndi_norns_frame.frame_format_type = NDIlib_frame_format_type_progressive;
 
-        ndi_norns_frame.line_stride_in_bytes = ndi_norns_frame.xres * 4 * sizeof(uint8_t);
-        ndi_norns_frame.p_data = (uint8_t*)malloc(ndi_norns_frame.line_stride_in_bytes * ndi_norns_frame.yres);
-        memset(ndi_norns_frame.p_data, 0, ndi_norns_frame.line_stride_in_bytes * ndi_norns_frame.yres);
-
-        std::cerr << "NDI server initialized";
+        std::cerr << "NDI sender initialized";
         initialized = true;
     }
 
@@ -84,14 +77,10 @@ static int ndi_mod_cleanup(lua_State *L) {
     if (initialized) {
         initialized = false;
 
-        if (ndi_norns_frame.p_data) {
-            free(ndi_norns_frame.p_data);
-        }
-
         NDIlib_send_destroy(send_instance);
         NDIlib_destroy();
 
-        std::cerr << "NDI server stopped";
+        std::cerr << "NDI sender stopped";
     }
 
     return 0;
@@ -121,17 +110,21 @@ static int ndi_mod_send_frame(lua_State *L) {
         }
 
         cairo_surface_t* surface = cairo_get_target(ctx);
-        if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
+        if (cairo_surface_get_type(surface) != CAIRO_SURFACE_TYPE_IMAGE ||
+            cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
             return 0;
         }
 
         cairo_surface_flush(surface);
+
         unsigned char* data = cairo_image_surface_get_data(surface);
         if (data != NULL) {
-            memcpy(ndi_norns_frame.p_data, data, 128*64*4);
+            ndi_norns_frame.xres = cairo_image_surface_get_width(surface);
+            ndi_norns_frame.yres = cairo_image_surface_get_height(surface);
+            ndi_norns_frame.line_stride_in_bytes = cairo_image_surface_get_stride(surface);
+            ndi_norns_frame.p_data = data;
+            NDIlib_send_send_video_async_v2(send_instance, &ndi_norns_frame);
         }
-
-        NDIlib_send_send_video_async_v2(send_instance, &ndi_norns_frame);
     }
     return 0;
 }
