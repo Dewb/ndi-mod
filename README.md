@@ -1,14 +1,16 @@
 # ndi-mod for norns
 
-a [norns](https://monome.org/norns) mod to share the screen in near-real-time via the [NDI](https://streamgeeks.us/what-is-ndi/) 
-streaming video protocol.
+a [norns](https://monome.org/norns) mod to share the contents of the LCD screen in near-real-time via the [NDI](https://streamgeeks.us/what-is-ndi/) streaming video protocol.
 
 <img src="https://user-images.githubusercontent.com/712405/174466864-cbf723bb-a657-4dab-bdf0-572e31b3e7ab.png" width=600>
 
+<img src="https://user-images.githubusercontent.com/712405/174466636-d860d066-bd27-47da-b93f-035291ee5ab8.png" width=600>
+
+<img src="https://user-images.githubusercontent.com/712405/174505098-a66b4830-e427-4ef1-978b-4302c11a8478.png" width=600>
+
 ## why ndi / why not ndi?
 
-NDI is fast, and includes zeroconf-based discovery of stream sources. Many popular streaming and video art tools support discovering and receiving NDI streams, including [OBS Studio](https://obsproject.com/)\*, 
-[Resolume](https://resolume.com/), and [Max/MSP/Jitter](https://cycling74.com/products/max-features)\*, and [Touch Designer](https://derivative.ca/UserGuide/NDI).
+NDI is fast, and includes zeroconf-based discovery of stream sources. Many popular streaming and video art tools support discovering and receiving NDI streams, including [OBS Studio](https://obsproject.com/)\*, [Resolume](https://resolume.com/), and [Max/MSP/Jitter](https://cycling74.com/products/max-features)\*, and [Touch Designer](https://derivative.ca/UserGuide/NDI).
 
 (*\* requires a plugin*)
 
@@ -20,7 +22,7 @@ Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain p
 
 # how to use
 
-### installing and activating
+## installing and activating
 
 1. From the maiden console, enter:
    ```
@@ -32,102 +34,11 @@ Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain p
    
 This will add about 6MB of files to `~/dust/code/ndi-mod`. To uninstall everything, go to the maiden library, scroll to `ndi-mod` in the installed section, and click **remove**.
 
-### general tips
+## documentation
 
-* norns should show up as "**NORNS** (norns screen)" in any NDI-supporting app or device that can reach norns through the network. NDI 5 support is best, but NDI 4 apps might also be able to connect.
-* If, in any program, you see local NDI sources but you don't see **NORNS**, make sure the app is allowed through any firewalls, and restart the app.
-
-### viewing NDI output with NDI Studio Monitor (PC/Mac/Linux)
-
-The NDI Studio Monitor tool provided by NewTek can view and record NDI streams.
-
-1. Install the [NDI Tools](https://ndi.tv/tools/). (This requires giving an e-mail address to NewTek.)
-2. Run NDI Studio Monitor and click the three-lines icon in the upper left corner.
-3. You should see **NORNS** in the sources list, click it and select **norns screen** from the flyout.
-
-### using with OBS Studio (PC/Mac/Linux)
-
-1. Install [OBS Studio](https://obsproject.com/).
-2. Install the [NDI plugin for OBS Studio](https://github.com/Palakis/obs-ndi/releases).
-3. Install the [the latest NDI Tools](https://ndi.tv/tools/). (NOTE: The Windows installer will install version 4 of the tools, so if you'd already installed them previously you may need to *re-install* NDI 5 after running the plugin installer. If you install the OBS plugin with the Windows .zip build, or the MacOS or Linux builds, you should only need to install the NDI 5 Tools once.)
-5. Run OBS Studio. If you get a firewall prompt (Windows) allow OBS to contact devices on the local network.
-6. Click the plus below the **Sources** list to add a new source. **NDI™ Source** should be in the list. Select it and then hit **OK**.
-7. In the Properties window, click the **Source Name** dropdown and choose **NORNS**.
-8. Hit **OK**. You should see the norns screen show up in the canvas. Click and drag the window and its corner controls to move and resize it.
-9. *Optional but recommended*:
-   * To keep your pixels crisp and blocky, right-click the NDI source and set **Scale Filtering** to **Point**.
-   * For the best performance, open the **Properties** window for the NDI source, scroll down to **Latency Mode** and change it to **Low (experimental)**. 
-
-**Tips**
-* If you want to overlay the screen over your webcam or other video sources:
-   * Select the source in the **Sources** list, click **Filters**, click the plus under **Effect Filters**, and choose **Luma Key**.
-   * Set **Luma Max** to `1.0`, **Luma Min** to `0.002`, and both **Smooth** values to `0.0`.
-* If you want to adjust the brightness levels (which are going to have a different curve than the norns hardware screen) add a **Color Correction** filter and adjust **Gamma**, **Brightness**. To turn the grayscale palette into a color gradient, try **Color Add** in the Color Correction filter or add a **Apply LUT** filter.
-
-<img src="https://user-images.githubusercontent.com/712405/174466636-d860d066-bd27-47da-b93f-035291ee5ab8.png" width=600>
-
-<img src="https://user-images.githubusercontent.com/712405/174505098-a66b4830-e427-4ef1-978b-4302c11a8478.png" width=600>
-
-## using with Resolume Avenue/Arena (PC/Mac)
-
-1. Start Resolume. If you get a firewall prompt (Windows) allow Resolume to contact devices on the local network.
-2. Scroll to the end of the **Sources** tab; you should see **NORNS** listed under the **NDI SERVERS** heading. Drag it into a clip.
-3. For more information, [read the NDI section of the Resolume documentation](https://resolume.com/support/en/NDI_inputs_and_outputs).
-
-**Tips**
-   * To overlay the norns screen over other video, add an **Auto Mask** effect to the norns screen clip and set the **Contrast** all the way up to 1. A **Bright.Contrast** effect before and/or after **Auto Mask** will allow you to fine tune the results.
-   * To use the norns screen as a key for other video, put the norns screen clip in a layer set to the **50 Mask** blend mode. Again, adding a **Bright.Contrast** effect to the clip will allow you to tune the results.
-
-<img src="https://user-images.githubusercontent.com/712405/174467144-db6121e9-5bfe-4919-b2a0-fdb45b3ec37f.png" width=600>
-
-### using with Max/MSP/Jitter (PC/Mac, requires Max 8.2.0 or later)
-
-1. Install the [jit.ndi](https://github.com/pixsper/jit.ndi) package following [the instructions in its README](https://github.com/pixsper/jit.ndi#installation).
-2. Run Max. Add a `jit.ndi.receive~` object. Right-click the object and choose **Open jit.ndi.receive~ Help**.
-3. In the help/example patch, follow the numbered instructions to **Select an NDI source** (choose NORNS) and **Toggle on qmetro.** You should see the norns screen in the output object.
-
-### using with Touch Designer (PC/Mac, version 2022.20000 or later recommended)
-
-1. Run Touch Designer. Hit **Tab** to add an operator, choose the **TOP** tab, and add an **NDI In** operator. 
-2. If you get a firewall prompt (Windows) allow TD to contact devices on the local network.
-3. In the properties of the **NDI In** operator, change **Source Name** to **NORNS**.
-4. You should see the norns screen inside the NDI operator. For more information, read the [NDI section in the Touch Designer user guide](https://derivative.ca/UserGuide/NDI).
-
-### using with mobile devices
-
-*iOS*
-
-1. Install [NDI Monitor by Sienna/Mark Gilbert](https://apps.apple.com/us/app/ndi-monitor/id1196221514) from the App Store ($9.99).
-2. Run it and grant permissions to contact devices on your network.
-3. Select **NORNS** from the list of detected sources.
-
-![image](https://user-images.githubusercontent.com/712405/174466657-bc22a195-f5f0-4721-bdcf-acd55813ff5d.png)
-
-*Android*
-
-TBD, No known solution yet
-
-## advanced usage
-
-### control via maiden and scripts
-
-When the mod is active, the NDI server is always running and sending video. You can customize the behavior with the following Lua methods:
-* `ndi_mod.stop()` will stop sending video
-* `ndi_mod.start()` will start sending video
-* `ndi_mod.send_frame()` will send a single frame, regardless of the start/stop state
-
-### building from source
-
-to build and copy into ~/dust/code:
-
-```bash
-./build.sh
-```
-
-# references/thanks
-
-* https://github.com/ngwese/norns-event-demo
-* https://github.com/raspberry-pi-camera/raspindi
+* [User's Guide](docs/User's%20Guide.md) - viewing NDI streams with [OBS Studio](https://obsproject.com/), [Resolume](https://resolume.com/), [Max/MSP/Jitter](https://cycling74.com/products/max-features), [Touch Designer](https://derivative.ca/UserGuide/NDI), and mobile devices.
+* [Scripting](docs/Scripting.md) - customizing the mod behavior from norns scripts and/or the maiden console, including using offscreen images to create additional NDI streams.
+* [Developing](docs/Developing.md) - building and hacking on the mod
 
 # license and copyright
 
