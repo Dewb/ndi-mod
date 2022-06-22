@@ -13,7 +13,7 @@
 
 ## General Tips
 
-* The norns should show up as "**NORNS (norns screen)**" in any NDI-supporting app or device that can reach norns through the network. NDI 5 support is best, but NDI 4 apps might also be able to connect.
+* The norns should show up as "**NORNS (screen)**" in any NDI-supporting app or device that can reach norns through the network. NDI 5 support is best, but NDI 4 apps might also be able to connect.
 * If, in any program, you see local NDI sources but you don't see **NORNS**, make sure the app is allowed through any firewalls, and restart the app.
 
 ## Advanced Topics
@@ -31,7 +31,7 @@ The NDI Studio Monitor tool provided by NewTek can view and record NDI streams.
 
 1. Install the [NDI Tools](https://ndi.tv/tools/). (This requires giving an e-mail address to NewTek.)
 2. Run NDI Studio Monitor and click the three-lines icon in the upper left corner.
-3. You should see **NORNS** in the sources list, click it and select **norns screen** from the flyout.
+3. You should see **NORNS** in the sources list, click it and select **screen** from the flyout.
 
 ### OBS Studio
 *(PC/Mac/Linux)*
@@ -43,7 +43,7 @@ OBS can stream, record, and composite NDI streams with other sources when both t
 3. Install the [the latest NDI Tools](https://ndi.tv/tools/). (NOTE: The Windows installer will install version 4 of the tools, so if you'd already installed them previously you may need to *re-install* NDI 5 after running the plugin installer. If you install the OBS plugin with the Windows .zip build, or the MacOS or Linux builds, you should only need to install the NDI 5 Tools once.)
 5. Run OBS Studio. If you get a firewall prompt (Windows) allow OBS to contact devices on the local network.
 6. Click the plus below the **Sources** list to add a new source. **NDI™ Source** should be in the list. Select it and then hit **OK**.
-7. In the Properties window, click the **Source Name** dropdown and choose **NORNS**.
+7. In the Properties window, click the **Source Name** dropdown and choose **NORNS (screen)**.
 8. Hit **OK**. You should see the norns screen show up in the canvas. Click and drag the window and its corner controls to move and resize it.
 9. *Optional but recommended*:
    * To keep your pixels crisp and blocky, right-click the NDI source and set **Scale Filtering** to **Point**.

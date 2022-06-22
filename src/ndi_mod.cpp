@@ -100,7 +100,7 @@ int initialize_ndi() {
         }
 
         cairo_surface_t* surface = cairo_get_target(ctx);
-        create_sender(surface, "norns screen");
+        create_sender(surface, "screen");
     }
     return 0;
 }
