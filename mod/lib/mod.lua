@@ -1,23 +1,36 @@
 local mod = require 'core/mods'
 
 local this_name = mod.this_name
-local first_update = true
 
 mod.hook.register("system_post_startup", "ndi", function()
   package.cpath = package.cpath .. ";" .. paths.code .. this_name .. "/lib/?.so"
   ndi_mod = require 'ndi_mod'
 
+  -- replace the default update function
   screen.update_default = function()
-    -- clients get confused if norns creates the NDI sender too quickly after a restart.
-    -- delay it to the first screen update
-    if first_update then ndi_mod.init(); first_update = false end
-
     _norns.screen_update()
     ndi_mod.update()
   end
 
-  screen.update = screen.update_default
-  ndi_mod.start()
+  -- patch screensaver metro event handler to continue
+  -- updating NDI after screensaver activates
+  local original_ss_event = metro[36].event
+  metro[36].event = function()
+    original_ss_event()
+    screen.update = function()
+      ndi_mod.update()
+    end
+  end
+
+  -- clients get confused if norns starts up NDI too quickly
+  -- after a restart, so delay it until the first screen update
+  screen.update = function()
+    ndi_mod.init()
+    ndi_mod.start()
+    screen.update = screen.update_default
+    screen.update()
+  end
+
 end)
 
 mod.hook.register("system_pre_shutdown", "ndi", function()
