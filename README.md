@@ -4,9 +4,16 @@ a [norns](https://monome.org/norns) mod to share the contents of the LCD screen 
 
 <img src="https://user-images.githubusercontent.com/712405/174466864-cbf723bb-a657-4dab-bdf0-572e31b3e7ab.png" width=600>
 
+(*[acrostic by infinitedigits](https://github.com/schollz/acrostic)*)
+
 <img src="https://user-images.githubusercontent.com/712405/174466636-d860d066-bd27-47da-b93f-035291ee5ab8.png" width=600>
 
+(*[takt by itsyourbedtime](https://github.com/itsyourbedtime/takt)*)
+
 <img src="https://user-images.githubusercontent.com/712405/174505098-a66b4830-e427-4ef1-978b-4302c11a8478.png" width=600>
+
+(*[nydl by sixolet](https://github.com/sixolet/nydl)*)
+
 
 ## why ndi / why not ndi?
 
