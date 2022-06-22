@@ -39,7 +39,7 @@ Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain p
    clockwise to add a `+` next to the mod name. Hit button 2 to back out, and select
    **SYSTEM > RESTART** to relaunch with the mod loaded.
    
-This will add about 3MB of files to `~/dust/code/ndi-mod`. To uninstall everything, go to the maiden library, scroll to `ndi-mod` in the installed section, and click **remove**.
+This will add about 3MB of files to `~/dust/code/ndi-mod`. To uninstall everything, disable the mod by reversing the above process, then **SYSTEM > RESTART** again. Then, go to the maiden library, scroll to `ndi-mod` in the installed section, and click **remove**.
 
 ## documentation
 
