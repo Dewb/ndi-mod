@@ -1,11 +1,18 @@
--- example of using ndi-mod to send offscreen images as additional NDI sources
+-- ndi-mod/examples/send_image
+--
+-- a demo of using ndi-mod
+-- to share offscreen images
+-- as additional NDI streams
 
 image = nil
 
 function init()
+  -- create the offscreen image
+  -- it can be larger than the 128x64 norns screen!
   image = screen.create_image(256, 256)
 end
 
+-- draw a test pattern in the current context
 function test_pattern()
   screen.clear()
   screen.line_width(1)
@@ -26,14 +33,23 @@ end
 
 function key(n,z)
   if n==2 and z==1 then
+
+    -- create the NDI sender for our offscreen image
     ndi_mod.create_image_sender(image, "image test")
+    -- draw to it once. for a useful script, you
+    -- probably want to do this repeatedly
     screen.draw_to(image, test_pattern)
+
   elseif n==3 and z==1 then
+
+    -- send a blank image as the final frame and
+    -- then destroy the NDI sender
     screen.draw_to(image, function()
       screen.clear()
       screen.update()
     end)
     ndi_mod.destroy_image_sender(image)
+
   end
 end
 
@@ -51,5 +67,8 @@ function redraw()
 end
 
 function cleanup()
+  -- when the script is unloaded the image will be deleted.
+  -- don't leave the sender hanging around, make
+  -- sure it's cleaned up before the image goes away
   ndi_mod.destroy_image_sender(image)
 end

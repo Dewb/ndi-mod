@@ -32,7 +32,16 @@ static bool failed = false;
 // core functions
 //
 
+#define MSG(contents) \
+   std::cerr << "ndi-mod: " << contents << "\n"
+
 int create_sender(cairo_surface_t* surface, const char* name) {
+    auto it = surface_sender_map.find(surface);
+    if (it != surface_sender_map.end()) {
+        MSG("an NDI sender already exists for this surface");
+        return 0;
+    }
+
     NDIlib_send_create_t send_create;
     send_create.p_ndi_name = name;
     send_create.p_groups = NULL;
@@ -41,12 +50,12 @@ int create_sender(cairo_surface_t* surface, const char* name) {
 
     NDIlib_send_instance_t send_instance = NDIlib_send_create(&send_create);
     if (!send_instance) {
-        std::cerr << "Error creating NDI sender \"" << name << "\"\n";
+        MSG("error creating NDI sender");
         return 0;
     }
 
     surface_sender_map[surface] = send_instance;
-    std::cerr << "NDI sender \"" << name << "\" created\n";
+    MSG("NDI sender \"" << name << "\" created");
 
     return 0;
 }
@@ -54,25 +63,25 @@ int create_sender(cairo_surface_t* surface, const char* name) {
 int destroy_sender(cairo_surface_t* surface) {
     auto it = surface_sender_map.find(surface);
     if (it == surface_sender_map.end()) {
-        // no NDI sender registered for this surface
+        MSG("No NDI sender exists for this surface");
         return 0;
     }
 
     NDIlib_send_destroy(it->second);
     surface_sender_map.erase(it);
-    std::cerr << "NDI sender destroyed\n";
+    MSG("NDI sender destroyed");
     return 0;
 }
 
 int initialize_ndi() {
     if (!initialized && !failed) {
         if (!NDIlib_initialize()) {
-            std::cerr << "Error initializing NDI library\n";
+            MSG("Error initializing NDI library");
             failed = true;
             return 0;
         }
 
-        std::cerr << "NDI service initialized\n";
+        MSG("NDI service initialized");
         initialized = true;
 
         // NDI video format: 30fps RGBA progressive (with alpha ignored.)
@@ -107,7 +116,7 @@ int cleanup_ndi() {
         surface_sender_map.clear();
 
         NDIlib_destroy();
-        std::cerr << "NDI service stopped\n";
+        MSG("NDI service stopped");
     }
     return 0;
 }
