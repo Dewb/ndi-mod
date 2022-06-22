@@ -24,7 +24,7 @@ add_custom_target(copy-mod ALL COMMAND
 
 add_custom_target(copy-extension ALL COMMAND
     ${CMAKE_COMMAND} -E copy $<TARGET_FILE:lua-extension> "${MOD_OUTPUT_PATH}/lib/" &&
-    ${CMAKE_COMMAND} -E copy "${NDI_SDK_PATH}/lib/*" "${MOD_OUTPUT_PATH}/lib/"
+    ${CMAKE_COMMAND} -E copy "${NDI_SDK_PATH}/lib/libndi.so" "${MOD_OUTPUT_PATH}/lib/libndi.so.5"
 )
 add_dependencies(copy-extension copy-mod)
 
