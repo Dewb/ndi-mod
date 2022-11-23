@@ -121,10 +121,10 @@ int initialize_ndi() {
         MSG("NDI service initialized");
         initialized = true;
 
-        // NDI video format: 30fps RGBA progressive (with alpha ignored.)
-        // norns cairo surfaces are CAIRO_FORMAT_ARGB32 (premultiplied ARGB.)
-        // But all four bytes are always the same, so the RGBA/ARGB mismatch
-        // doesn't matter, and we can use the surface data directly.
+        // NDI video format: 60fps NV12 progressive
+        // norns cairo surfaces are A8, which we can use as the Y plane
+        // of a NV12 surface, we just need to increase the buffer by 50%
+        // for the UV plane and fill it with a neutral value (0x88).
         ndi_norns_frame.frame_rate_N = 60000;
         ndi_norns_frame.frame_rate_D = 1000;
         ndi_norns_frame.FourCC = NDIlib_FourCC_type_NV12;
