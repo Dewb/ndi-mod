@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <map>
+#include <cstring>
 
 // lua
 #include <lauxlib.h>
@@ -21,7 +22,13 @@ extern "C" {
 // ndi
 #include <Processing.NDI.Lib.h>
 
-std::map<cairo_surface_t*, NDIlib_send_instance_t> surface_sender_map;
+struct sender_record {
+   NDIlib_send_instance_t sender;
+   uint8_t* buffer;
+   size_t luma_plane_size;
+};
+
+std::map<cairo_surface_t*, sender_record> surface_sender_map;
 NDIlib_video_frame_v2_t ndi_norns_frame;
 
 static bool running = false;
@@ -34,6 +41,25 @@ static bool failed = false;
 
 #define MSG(contents) \
    std::cerr << "ndi-mod: " << contents << "\n"
+
+void create_nv12_buffer_for_surface(cairo_surface_t* surface, uint8_t** buffer, size_t* luma_plane_size) {
+    if (cairo_surface_get_type(surface) != CAIRO_SURFACE_TYPE_IMAGE ||
+        cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
+        buffer = NULL;
+        luma_plane_size = 0;
+        return;
+    }
+
+    int stride = cairo_image_surface_get_stride(surface);
+    int yres = cairo_image_surface_get_height(surface);
+
+    // Create the backing buffer for our NV12 surface
+    *luma_plane_size = yres*stride;
+    *buffer = (uint8_t*)calloc(yres*stride*1.5, sizeof(uint8_t));
+
+    // Create a constant chroma plane
+    memset(*buffer + yres*stride, 0x88, yres*stride/2);
+}
 
 int create_sender(cairo_surface_t* surface, const char* name) {
     auto it = surface_sender_map.find(surface);
@@ -54,7 +80,16 @@ int create_sender(cairo_surface_t* surface, const char* name) {
         return 0;
     }
 
-    surface_sender_map[surface] = send_instance;
+    uint8_t* buffer;
+    size_t luma_plane_size;
+    create_nv12_buffer_for_surface(surface, &buffer, &luma_plane_size);
+
+    surface_sender_map[surface] = {
+        .sender = send_instance,
+        .buffer = buffer,
+        .luma_plane_size = luma_plane_size
+    };
+
     MSG("NDI sender \"" << name << "\" created");
 
     return 0;
@@ -67,7 +102,9 @@ int destroy_sender(cairo_surface_t* surface) {
         return 0;
     }
 
-    NDIlib_send_destroy(it->second);
+    NDIlib_send_destroy(it->second.sender);
+    free(it->second.buffer);
+
     surface_sender_map.erase(it);
     MSG("NDI sender destroyed");
     return 0;
@@ -88,9 +125,9 @@ int initialize_ndi() {
         // norns cairo surfaces are CAIRO_FORMAT_ARGB32 (premultiplied ARGB.)
         // But all four bytes are always the same, so the RGBA/ARGB mismatch
         // doesn't matter, and we can use the surface data directly.
-        ndi_norns_frame.frame_rate_N = 30000;
+        ndi_norns_frame.frame_rate_N = 60000;
         ndi_norns_frame.frame_rate_D = 1000;
-        ndi_norns_frame.FourCC = NDIlib_FourCC_type_RGBX;
+        ndi_norns_frame.FourCC = NDIlib_FourCC_type_NV12;
         ndi_norns_frame.frame_format_type = NDIlib_frame_format_type_progressive;
 
         // create the default sender
@@ -111,7 +148,8 @@ int cleanup_ndi() {
         initialized = false;
 
         for (auto& kv : surface_sender_map) {
-            NDIlib_send_destroy(kv.second);
+            NDIlib_send_destroy(kv.second.sender);
+            free(kv.second.buffer);
         }
         surface_sender_map.clear();
 
@@ -130,7 +168,8 @@ int send_surface_as_frame(cairo_surface_t* surface)
             // no NDI sender registered for this surface
             return 0;
         }
-        auto send_instance = it->second;
+
+        auto record = it->second;
 
         // prepare the surface
         if (cairo_surface_get_type(surface) != CAIRO_SURFACE_TYPE_IMAGE ||
@@ -141,12 +180,16 @@ int send_surface_as_frame(cairo_surface_t* surface)
 
         // prepare the frame and send it
         unsigned char* data = cairo_image_surface_get_data(surface);
-        if (data != NULL) {
-            ndi_norns_frame.xres = cairo_image_surface_get_width(surface);
-            ndi_norns_frame.yres = cairo_image_surface_get_height(surface);
-            ndi_norns_frame.line_stride_in_bytes = cairo_image_surface_get_stride(surface);
-            ndi_norns_frame.p_data = data;
-            NDIlib_send_send_video_async_v2(send_instance, &ndi_norns_frame);
+        int stride = cairo_image_surface_get_stride(surface);
+        int xres = cairo_image_surface_get_width(surface);
+        int yres = cairo_image_surface_get_height(surface);
+        if (data != NULL && record.buffer != NULL) {
+            memcpy(record.buffer, data, std::min((size_t)stride*yres, record.luma_plane_size));
+            ndi_norns_frame.xres = xres;
+            ndi_norns_frame.yres = yres;
+            ndi_norns_frame.line_stride_in_bytes = stride;
+            ndi_norns_frame.p_data = record.buffer;
+            NDIlib_send_send_video_async_v2(record.sender, &ndi_norns_frame);
         }
     }
     return 0;
