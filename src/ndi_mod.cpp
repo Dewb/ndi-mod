@@ -28,6 +28,9 @@ static bool running = false;
 static bool initialized = false;
 static bool failed = false;
 
+int frame_rate_divisor = 1;
+int frame_counter = 0;
+
 //
 // core functions
 //
@@ -84,11 +87,11 @@ int initialize_ndi() {
         MSG("NDI service initialized");
         initialized = true;
 
-        // NDI video format: 30fps RGBA progressive (with alpha ignored.)
+        // NDI video format: 60fps RGBA progressive (with alpha ignored.)
         // norns cairo surfaces are CAIRO_FORMAT_ARGB32 (premultiplied ARGB.)
         // But all four bytes are always the same, so the RGBA/ARGB mismatch
         // doesn't matter, and we can use the surface data directly.
-        ndi_norns_frame.frame_rate_N = 30000;
+        ndi_norns_frame.frame_rate_N = 60000;
         ndi_norns_frame.frame_rate_D = 1000;
         ndi_norns_frame.FourCC = NDIlib_FourCC_type_RGBX;
         ndi_norns_frame.frame_format_type = NDIlib_frame_format_type_progressive;
@@ -123,6 +126,11 @@ int cleanup_ndi() {
 
 int send_surface_as_frame(cairo_surface_t* surface)
 {
+    frame_counter++;
+    if (frame_counter % frame_rate_divisor != 0) {
+        return 0;
+    }
+
     if (initialized && !failed) {
         // locate the sender
         auto it = surface_sender_map.find(surface);
@@ -133,11 +141,13 @@ int send_surface_as_frame(cairo_surface_t* surface)
         auto send_instance = it->second;
 
         // prepare the surface
-        if (cairo_surface_get_type(surface) != CAIRO_SURFACE_TYPE_IMAGE ||
-            cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
-            return 0;
-        }
-        cairo_surface_flush(surface);
+        // if (cairo_surface_get_type(surface) != CAIRO_SURFACE_TYPE_IMAGE ||
+        //     cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
+        //     return 0;
+        // }
+
+        // if we're responding to a refresh event, surface should already be flushed
+        // cairo_surface_flush(surface);
 
         // prepare the frame and send it
         unsigned char* data = cairo_image_surface_get_data(surface);
@@ -218,6 +228,20 @@ static int ndi_mod_destroy_image_sender(lua_State *l) {
     return 0;
 }
 
+static int ndi_mod_set_frame_rate_divisor(lua_State *l) {
+    lua_check_num_args(1);
+    int divisor = luaL_checkinteger(l, 1);
+    int rate = 60;
+
+    if (divisor > 0 && divisor <= 60) {
+        ndi_norns_frame.frame_rate_N = rate * 1000;
+        ndi_norns_frame.frame_rate_D = divisor * 1000;
+        frame_rate_divisor = divisor;
+    }
+
+    return 0;
+}
+
 //
 // module definition
 //
@@ -235,6 +259,7 @@ static luaL_Reg func[] = {
     {"is_running", ndi_mod_is_running},
     {"create_image_sender", ndi_mod_create_image_sender},
     {"destroy_image_sender", ndi_mod_destroy_image_sender},
+    {"set_frame_rate_divisor", ndi_mod_set_frame_rate_divisor},
     {NULL, NULL}
 };
 
