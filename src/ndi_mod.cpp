@@ -55,6 +55,7 @@ int create_sender(cairo_surface_t* surface, const char* name) {
     }
 
     surface_sender_map[surface] = send_instance;
+    cairo_surface_reference(surface); // increase refcount
     MSG("NDI sender \"" << name << "\" created");
 
     return 0;
@@ -69,6 +70,7 @@ int destroy_sender(cairo_surface_t* surface) {
 
     NDIlib_send_destroy(it->second);
     surface_sender_map.erase(it);
+    cairo_surface_destroy(surface); // decrease refcount
     MSG("NDI sender destroyed");
     return 0;
 }
@@ -84,17 +86,17 @@ int initialize_ndi() {
         MSG("NDI service initialized");
         initialized = true;
 
-        // NDI video format: 30fps RGBA progressive (with alpha ignored.)
+        // NDI video format: 60fps RGBA progressive (with alpha ignored.)
         // norns cairo surfaces are CAIRO_FORMAT_ARGB32 (premultiplied ARGB.)
         // But all four bytes are always the same, so the RGBA/ARGB mismatch
         // doesn't matter, and we can use the surface data directly.
-        ndi_norns_frame.frame_rate_N = 30000;
+        ndi_norns_frame.frame_rate_N = 60000;
         ndi_norns_frame.frame_rate_D = 1000;
         ndi_norns_frame.FourCC = NDIlib_FourCC_type_RGBX;
         ndi_norns_frame.frame_format_type = NDIlib_frame_format_type_progressive;
 
         // create the default sender
-        cairo_t* ctx = (cairo_t*)screen_context_get_current();
+        cairo_t* ctx = (cairo_t*)screen_context_get_primary();
         if (ctx == NULL) {
             return 0;
         }
@@ -121,23 +123,14 @@ int cleanup_ndi() {
     return 0;
 }
 
-int send_surface_as_frame(cairo_surface_t* surface)
+static void send_surface_as_frame(cairo_surface_t* surface, NDIlib_send_instance_t send_instance)
 {
     if (initialized && !failed) {
-        // locate the sender
-        auto it = surface_sender_map.find(surface);
-        if (it == surface_sender_map.end()) {
-            // no NDI sender registered for this surface
-            return 0;
-        }
-        auto send_instance = it->second;
 
-        // prepare the surface
         if (cairo_surface_get_type(surface) != CAIRO_SURFACE_TYPE_IMAGE ||
             cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
-            return 0;
+            return;
         }
-        cairo_surface_flush(surface);
 
         // prepare the frame and send it
         unsigned char* data = cairo_image_surface_get_data(surface);
@@ -149,7 +142,16 @@ int send_surface_as_frame(cairo_surface_t* surface)
             NDIlib_send_send_video_async_v2(send_instance, &ndi_norns_frame);
         }
     }
-    return 0;
+}
+
+static void update_all_surfaces()
+{
+    if (running)
+    {
+        for (const auto& entry : surface_sender_map) {
+            send_surface_as_frame(entry.first, entry.second);
+        }
+    }
 }
 
 //
@@ -168,16 +170,10 @@ static int ndi_mod_cleanup(lua_State *l) {
 
 static int ndi_mod_update(lua_State *l) {
     lua_check_num_args(0);
-    if (running) {
-        cairo_t* ctx = (cairo_t*)screen_context_get_current();
-        if (ctx == NULL) {
-            return 0;
-        }
-        cairo_surface_t* surface = cairo_get_target(ctx);
-        return send_surface_as_frame(surface);
-    }
+    update_all_surfaces();
     return 0;
 }
+
 
 static int ndi_mod_start(lua_State *l) {
     lua_check_num_args(0);
