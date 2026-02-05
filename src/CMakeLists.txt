@@ -17,6 +17,7 @@ include_directories(${LIBLUA_INCLUDE_DIRS} ${JACK_INCLUDE_DIRS})
 #
 set(SOURCE_FILES
   ndi_mod.cpp
+  ndi_mod_audio.cpp
 )
 
 add_library(lua-extension MODULE ${SOURCE_FILES})

@@ -1,10 +1,8 @@
 #include "ndi_mod.h"
+#include "ndi_mod_audio.h"
 
 #include <iostream>
 #include <map>
-#include <cstring>
-
-#include <jack/jack.h>
 
 // lua
 #include <lauxlib.h>
@@ -27,19 +25,9 @@ extern "C" {
 std::map<cairo_surface_t*, NDIlib_send_instance_t> surface_sender_map;
 NDIlib_video_frame_v2_t ndi_norns_frame;
 
-static bool running = false;
+bool running = false;
 static bool initialized = false;
 static bool failed = false;
-
-// jack audio
-static const int NDI_JACK_MAX_FRAMES = 8192;
-static const int NDI_JACK_NUM_CHANNELS = 2;
-static jack_client_t* jack_client = NULL;
-static jack_port_t* jack_port_left = NULL;
-static jack_port_t* jack_port_right = NULL;
-static float jack_audio_buffer[NDI_JACK_NUM_CHANNELS * NDI_JACK_MAX_FRAMES];
-static NDIlib_send_instance_t ndi_audio_sender = NULL;
-static NDIlib_audio_frame_v2_t ndi_audio_frame;
 
 //
 // core functions
@@ -88,113 +76,6 @@ int destroy_sender(cairo_surface_t* surface) {
     return 0;
 }
 
-//
-// jack audio functions
-//
-
-static int jack_process_callback(jack_nframes_t nframes, void* arg) {
-    if (!running || !ndi_audio_sender || nframes > NDI_JACK_MAX_FRAMES)
-        return 0;
-
-    float* left = (float*)jack_port_get_buffer(jack_port_left, nframes);
-    float* right = (float*)jack_port_get_buffer(jack_port_right, nframes);
-
-    // copy into planar buffer: channel 0 then channel 1
-    memcpy(jack_audio_buffer, left, nframes * sizeof(float));
-    memcpy(jack_audio_buffer + nframes, right, nframes * sizeof(float));
-
-    ndi_audio_frame.no_samples = nframes;
-    ndi_audio_frame.channel_stride_in_bytes = nframes * sizeof(float);
-    NDIlib_send_send_audio_v2(ndi_audio_sender, &ndi_audio_frame);
-
-    return 0;
-}
-
-static void jack_shutdown_callback(void* arg) {
-    MSG("JACK server shut down unexpectedly");
-    jack_client = NULL;
-    jack_port_left = NULL;
-    jack_port_right = NULL;
-    ndi_audio_sender = NULL;
-}
-
-static void initialize_jack() {
-    jack_status_t status;
-    jack_client = jack_client_open("ndi-mod", JackNoStartServer, &status);
-    if (!jack_client) {
-        MSG("JACK: could not open client (server not running?), continuing without audio");
-        return;
-    }
-
-    jack_port_left = jack_port_register(jack_client, "input_1",
-        JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
-    jack_port_right = jack_port_register(jack_client, "input_2",
-        JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
-
-    if (!jack_port_left || !jack_port_right) {
-        MSG("JACK: failed to register ports, continuing without audio");
-        jack_client_close(jack_client);
-        jack_client = NULL;
-        jack_port_left = NULL;
-        jack_port_right = NULL;
-        return;
-    }
-
-    // cache the "screen" sender for audio
-    cairo_t* ctx = (cairo_t*)screen_context_get_primary();
-    if (ctx) {
-        cairo_surface_t* surface = cairo_get_target(ctx);
-        auto it = surface_sender_map.find(surface);
-        if (it != surface_sender_map.end()) {
-            ndi_audio_sender = it->second;
-        }
-    }
-
-    // pre-fill audio frame descriptor
-    memset(&ndi_audio_frame, 0, sizeof(ndi_audio_frame));
-    ndi_audio_frame.timecode = NDIlib_send_timecode_synthesize;
-    ndi_audio_frame.sample_rate = jack_get_sample_rate(jack_client);
-    ndi_audio_frame.no_channels = NDI_JACK_NUM_CHANNELS;
-    ndi_audio_frame.no_samples = 0;
-    ndi_audio_frame.p_data = jack_audio_buffer;
-    ndi_audio_frame.channel_stride_in_bytes = 0;
-
-    jack_set_process_callback(jack_client, jack_process_callback, NULL);
-    jack_on_shutdown(jack_client, jack_shutdown_callback, NULL);
-
-    if (jack_activate(jack_client)) {
-        MSG("JACK: failed to activate client, continuing without audio");
-        jack_client_close(jack_client);
-        jack_client = NULL;
-        jack_port_left = NULL;
-        jack_port_right = NULL;
-        ndi_audio_sender = NULL;
-        return;
-    }
-
-    // auto-connect to crone outputs
-    if (jack_connect(jack_client, "crone:output_1", "ndi-mod:input_1") != 0) {
-        MSG("JACK: could not connect to crone:output_1 (connect manually)");
-    }
-    if (jack_connect(jack_client, "crone:output_2", "ndi-mod:input_2") != 0) {
-        MSG("JACK: could not connect to crone:output_2 (connect manually)");
-    }
-
-    MSG("JACK audio client initialized (sample rate: " << ndi_audio_frame.sample_rate << ")");
-}
-
-static void cleanup_jack() {
-    if (jack_client) {
-        jack_deactivate(jack_client);
-        jack_client_close(jack_client);
-        jack_client = NULL;
-        jack_port_left = NULL;
-        jack_port_right = NULL;
-        ndi_audio_sender = NULL;
-        MSG("JACK audio client closed");
-    }
-}
-
 int initialize_ndi() {
     if (!initialized && !failed) {
         if (!NDIlib_initialize()) {
@@ -223,8 +104,6 @@ int initialize_ndi() {
 
         cairo_surface_t* surface = cairo_get_target(ctx);
         create_sender(surface, "screen");
-
-        initialize_jack();
     }
     return 0;
 }
@@ -316,6 +195,28 @@ static int ndi_mod_is_running(lua_State *l) {
     return 1;
 }
 
+static int ndi_mod_init_audio(lua_State *l) {
+    int nargs = lua_gettop(l);
+    const char* output_left = NULL;
+    const char* output_right = NULL;
+
+    if (nargs >= 1 && !lua_isnil(l, 1)) {
+        output_left = luaL_checkstring(l, 1);
+    }
+    if (nargs >= 2 && !lua_isnil(l, 2)) {
+        output_right = luaL_checkstring(l, 2);
+    }
+
+    initialize_jack(output_left, output_right);
+    return 0;
+}
+
+static int ndi_mod_cleanup_audio(lua_State *l) {
+    lua_check_num_args(0);
+    cleanup_jack();
+    return 0;
+}
+
 static int ndi_mod_create_image_sender(lua_State *l) {
     lua_check_num_args(2);
     _image_t *i = _image_check(l, 1);
@@ -348,6 +249,8 @@ static const luaL_Reg mod[] = {
 static luaL_Reg func[] = {
     {"init", ndi_mod_init},
     {"cleanup", ndi_mod_cleanup},
+    {"init_audio", ndi_mod_init_audio},
+    {"cleanup_audio", ndi_mod_cleanup_audio},
     {"update", ndi_mod_update},
     {"start", ndi_mod_start},
     {"stop", ndi_mod_stop},
