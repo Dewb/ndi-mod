@@ -197,17 +197,44 @@ static int ndi_mod_is_running(lua_State *l) {
 
 static int ndi_mod_init_audio(lua_State *l) {
     int nargs = lua_gettop(l);
-    const char* output_left = NULL;
-    const char* output_right = NULL;
 
-    if (nargs >= 1 && !lua_isnil(l, 1)) {
-        output_left = luaL_checkstring(l, 1);
-    }
-    if (nargs >= 2 && !lua_isnil(l, 2)) {
-        output_right = luaL_checkstring(l, 2);
+    // check if first arg is a table (multi-channel mode)
+    if (nargs >= 1 && lua_istable(l, 1)) {
+        // multi-channel mode: extract port names from table
+        int num_channels = lua_rawlen(l, 1);
+        if (num_channels <= 0) {
+            return luaL_error(l, "init_audio: table must contain at least one port name");
+        }
+
+        const char** ports = new const char*[num_channels];
+        for (int i = 0; i < num_channels; i++) {
+            lua_rawgeti(l, 1, i + 1);
+            if (!lua_isstring(l, -1)) {
+                delete[] ports;
+                return luaL_error(l, "init_audio: all table elements must be strings");
+            }
+            ports[i] = lua_tostring(l, -1);
+            lua_pop(l, 1);
+        }
+
+        initialize_jack(ports, num_channels);
+        delete[] ports;
+    } else {
+        // stereo mode (backward compatible)
+        const char* output_left = "crone:output_1";
+        const char* output_right = "crone:output_2";
+
+        if (nargs >= 1 && lua_isstring(l, 1)) {
+            output_left = lua_tostring(l, 1);
+        }
+        if (nargs >= 2 && lua_isstring(l, 2)) {
+            output_right = lua_tostring(l, 2);
+        }
+
+        const char* ports[2] = { output_left, output_right };
+        initialize_jack(ports, 2);
     }
 
-    initialize_jack(output_left, output_right);
     return 0;
 }
 

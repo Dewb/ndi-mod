@@ -2,7 +2,9 @@
 
 #include <iostream>
 #include <map>
+#include <vector>
 #include <cstring>
+#include <string>
 
 #include <jack/jack.h>
 
@@ -22,11 +24,10 @@ extern bool running;
 
 // jack audio
 static const int NDI_JACK_MAX_FRAMES = 8192;
-static const int NDI_JACK_NUM_CHANNELS = 2;
 static jack_client_t* jack_client = NULL;
-static jack_port_t* jack_port_left = NULL;
-static jack_port_t* jack_port_right = NULL;
-static float jack_audio_buffer[NDI_JACK_NUM_CHANNELS * NDI_JACK_MAX_FRAMES];
+static std::vector<jack_port_t*> jack_ports;
+static float* jack_audio_buffer = NULL;
+static int num_channels = 0;
 static NDIlib_send_instance_t ndi_audio_sender = NULL;
 static NDIlib_audio_frame_v2_t ndi_audio_frame;
 
@@ -34,12 +35,11 @@ static int jack_process_callback(jack_nframes_t nframes, void* arg) {
     if (!running || !ndi_audio_sender || nframes > NDI_JACK_MAX_FRAMES)
         return 0;
 
-    float* left = (float*)jack_port_get_buffer(jack_port_left, nframes);
-    float* right = (float*)jack_port_get_buffer(jack_port_right, nframes);
-
-    // copy into planar buffer: channel 0 then channel 1
-    memcpy(jack_audio_buffer, left, nframes * sizeof(float));
-    memcpy(jack_audio_buffer + nframes, right, nframes * sizeof(float));
+    // copy each channel into planar buffer position
+    for (int ch = 0; ch < num_channels; ch++) {
+        float* buf = (float*)jack_port_get_buffer(jack_ports[ch], nframes);
+        memcpy(jack_audio_buffer + (ch * nframes), buf, nframes * sizeof(float));
+    }
 
     ndi_audio_frame.no_samples = nframes;
     ndi_audio_frame.channel_stride_in_bytes = nframes * sizeof(float);
@@ -51,19 +51,17 @@ static int jack_process_callback(jack_nframes_t nframes, void* arg) {
 static void jack_shutdown_callback(void* arg) {
     MSG("JACK server shut down unexpectedly");
     jack_client = NULL;
-    jack_port_left = NULL;
-    jack_port_right = NULL;
+    jack_ports.clear();
     ndi_audio_sender = NULL;
 }
 
-void initialize_jack(const char* output_left, const char* output_right) {
-    // default to crone outputs if not specified
-    if (!output_left || output_left[0] == '\0') {
-        output_left = "crone:output_1";
+void initialize_jack(const char** output_ports, int channel_count) {
+    if (channel_count <= 0) {
+        MSG("JACK: invalid channel count, continuing without audio");
+        return;
     }
-    if (!output_right || output_right[0] == '\0') {
-        output_right = "crone:output_2";
-    }
+
+    num_channels = channel_count;
 
     jack_status_t status;
     jack_client = jack_client_open("ndi-mod", JackNoStartServer, &status);
@@ -72,18 +70,30 @@ void initialize_jack(const char* output_left, const char* output_right) {
         return;
     }
 
-    jack_port_left = jack_port_register(jack_client, "input_1",
-        JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
-    jack_port_right = jack_port_register(jack_client, "input_2",
-        JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+    // allocate the audio buffer dynamically
+    jack_audio_buffer = new float[num_channels * NDI_JACK_MAX_FRAMES];
 
-    if (!jack_port_left || !jack_port_right) {
-        MSG("JACK: failed to register ports, continuing without audio");
-        jack_client_close(jack_client);
-        jack_client = NULL;
-        jack_port_left = NULL;
-        jack_port_right = NULL;
-        return;
+    // register N input ports
+    jack_ports.reserve(num_channels);
+    for (int i = 0; i < num_channels; i++) {
+        std::string port_name = "input_" + std::to_string(i + 1);
+        jack_port_t* port = jack_port_register(jack_client, port_name.c_str(),
+            JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+        if (!port) {
+            MSG("JACK: failed to register port " << port_name << ", continuing without audio");
+            // clean up already registered ports
+            for (auto& p : jack_ports) {
+                jack_port_unregister(jack_client, p);
+            }
+            jack_ports.clear();
+            jack_client_close(jack_client);
+            jack_client = NULL;
+            delete[] jack_audio_buffer;
+            jack_audio_buffer = NULL;
+            num_channels = 0;
+            return;
+        }
+        jack_ports.push_back(port);
     }
 
     // cache the "screen" sender for audio
@@ -100,7 +110,7 @@ void initialize_jack(const char* output_left, const char* output_right) {
     memset(&ndi_audio_frame, 0, sizeof(ndi_audio_frame));
     ndi_audio_frame.timecode = NDIlib_send_timecode_synthesize;
     ndi_audio_frame.sample_rate = jack_get_sample_rate(jack_client);
-    ndi_audio_frame.no_channels = NDI_JACK_NUM_CHANNELS;
+    ndi_audio_frame.no_channels = num_channels;
     ndi_audio_frame.no_samples = 0;
     ndi_audio_frame.p_data = jack_audio_buffer;
     ndi_audio_frame.channel_stride_in_bytes = 0;
@@ -110,23 +120,28 @@ void initialize_jack(const char* output_left, const char* output_right) {
 
     if (jack_activate(jack_client)) {
         MSG("JACK: failed to activate client, continuing without audio");
+        for (auto& p : jack_ports) {
+            jack_port_unregister(jack_client, p);
+        }
+        jack_ports.clear();
         jack_client_close(jack_client);
         jack_client = NULL;
-        jack_port_left = NULL;
-        jack_port_right = NULL;
+        delete[] jack_audio_buffer;
+        jack_audio_buffer = NULL;
         ndi_audio_sender = NULL;
+        num_channels = 0;
         return;
     }
 
-    // connect to specified outputs
-    if (jack_connect(jack_client, output_left, "ndi-mod:input_1") != 0) {
-        MSG("JACK: could not connect to " << output_left << " (connect manually)");
-    }
-    if (jack_connect(jack_client, output_right, "ndi-mod:input_2") != 0) {
-        MSG("JACK: could not connect to " << output_right << " (connect manually)");
+    // connect to specified output ports
+    for (int i = 0; i < num_channels; i++) {
+        std::string our_port = "ndi-mod:input_" + std::to_string(i + 1);
+        if (jack_connect(jack_client, output_ports[i], our_port.c_str()) != 0) {
+            MSG("JACK: could not connect to " << output_ports[i] << " (connect manually)");
+        }
     }
 
-    MSG("JACK audio client initialized (sample rate: " << ndi_audio_frame.sample_rate << ")");
+    MSG("JACK audio client initialized (" << num_channels << " channels, sample rate: " << ndi_audio_frame.sample_rate << ")");
 }
 
 void cleanup_jack() {
@@ -134,9 +149,13 @@ void cleanup_jack() {
         jack_deactivate(jack_client);
         jack_client_close(jack_client);
         jack_client = NULL;
-        jack_port_left = NULL;
-        jack_port_right = NULL;
+        jack_ports.clear();
         ndi_audio_sender = NULL;
         MSG("JACK audio client closed");
     }
+    if (jack_audio_buffer) {
+        delete[] jack_audio_buffer;
+        jack_audio_buffer = NULL;
+    }
+    num_channels = 0;
 }
