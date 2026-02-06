@@ -9,13 +9,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
 
 include(FindPkgConfig)
 pkg_check_modules(LIBLUA REQUIRED lua-5.3)
-include_directories(${LIBLUA_INCLUDE_DIRS})
+pkg_check_modules(JACK REQUIRED jack)
+include_directories(${LIBLUA_INCLUDE_DIRS} ${JACK_INCLUDE_DIRS})
 
 #
 # module
 #
 set(SOURCE_FILES
   ndi_mod.cpp
+  ndi_mod_audio.cpp
 )
 
 add_library(lua-extension MODULE ${SOURCE_FILES})
@@ -35,9 +37,11 @@ target_include_directories(lua-extension PUBLIC
 
 target_link_directories(lua-extension PUBLIC
   "${NDI_SDK_PATH}/lib"
+  ${JACK_LIBRARY_DIRS}
 )
 
 target_link_libraries(lua-extension PUBLIC
   ndi
+  ${JACK_LIBRARIES}
 )
 
