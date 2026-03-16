@@ -282,6 +282,12 @@ static int ndi_mod_destroy_image_sender(lua_State *l) {
     return 0;
 }
 
+static int ndi_mod_version(lua_State *l) {
+    lua_check_num_args(0);
+    lua_pushstring(l, NDI_MOD_VERSION);
+    return 1;
+}
+
 //
 // module definition
 //
@@ -299,6 +305,7 @@ static luaL_Reg func[] = {
     {"is_running", ndi_mod_is_running},
     {"create_image_sender", ndi_mod_create_image_sender},
     {"destroy_image_sender", ndi_mod_destroy_image_sender},
+    {"version", ndi_mod_version},
     {NULL, NULL}
 };
 
