@@ -95,6 +95,7 @@ Touch Designer includes support for NDI 5 out of the box in versions 2022.20000 
 2. If you get a firewall prompt (Windows) allow TD to contact devices on the local network.
 3. In the properties of the **NDI In** operator, change **Source Name** to **NORNS**.
 4. You should see the norns screen inside the NDI operator. For more information, read the [NDI section in the Touch Designer user guide](https://derivative.ca/UserGuide/NDI).
+5. Optional: to mimic the norns screen appearance, on the **NDI In** operator, set **Common > Viewer smoothness** to **Nearest Pixel**.
 
 ## Mobile devices
 
