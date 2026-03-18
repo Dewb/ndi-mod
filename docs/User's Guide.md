@@ -29,7 +29,7 @@ Visit [Developing](Developing.md) for information about building and hacking on 
 
 The NDI Studio Monitor tool provided by NewTek can view and record NDI streams.
 
-1. Install the [NDI Tools](https://ndi.tv/tools/). (This requires giving an e-mail address to NewTek.)
+1. Install the [NDI Tools](https://ndi.video/tools/).
 2. Run NDI Studio Monitor and click the three-lines icon in the upper left corner.
 3. You should see **NORNS** in the sources list, click it and select **screen** from the flyout.
 
@@ -38,16 +38,16 @@ The NDI Studio Monitor tool provided by NewTek can view and record NDI streams.
 
 OBS can stream, record, and composite NDI streams with other sources when both the [obs-ndi](https://github.com/Palakis/obs-ndi) plugin and the [NewTek NDI Tools](https://ndi.tv/tools/) are installed.
 
-1. Install [OBS Studio](https://obsproject.com/).
-2. Install the [NDI plugin for OBS Studio](https://github.com/Palakis/obs-ndi/releases).
-3. Install the [the latest NDI Tools](https://ndi.tv/tools/). (NOTE: The Windows installer will install version 4 of the tools, so if you'd already installed them previously you may need to *re-install* NDI 5 after running the plugin installer. If you install the OBS plugin with the Windows .zip build, or the MacOS or Linux builds, you should only need to install the NDI 5 Tools once.)
-5. Run OBS Studio. If you get a firewall prompt (Windows) allow OBS to contact devices on the local network.
-6. Click the plus below the **Sources** list to add a new source. **NDI™ Source** should be in the list. Select it and then hit **OK**.
-7. In the Properties window, click the **Source Name** dropdown and choose **NORNS (screen)**.
-8. Hit **OK**. You should see the norns screen show up in the canvas. Click and drag the window and its corner controls to move and resize it.
-9. *Optional but recommended*:
+1. Install [OBS Studio](https://obsproject.com/) version 30 or later.
+2. Install the [DistroAV plugin for OBS Studio]i(https://obsproject.com/forum/resources/distroav-network-audio-video-in-obs-studio-using-ndi®-technology.528/).
+3. Install the [the latest NDI Tools](https://ndi.video/tools/).
+4. Run OBS Studio. If you get a firewall prompt, allow OBS to contact devices on the local network.
+5. Click the plus below the **Sources** list to add a new source. **NDI™ Source** should be in the list. Select it and then hit **OK**.
+6. In the Properties window, click the **Source Name** dropdown and choose **NORNS (screen)**.
+7. Hit **OK**. You should see the norns screen show up in the canvas. Click and drag the window and its corner controls to move and resize it.
+8. *Optional but recommended*:
    * To keep your pixels crisp and blocky, right-click the NDI source and set **Scale Filtering** to **Point**.
-   * For the best performance, open the **Properties** window for the NDI source, scroll down to **Latency Mode** and change it to **Low (experimental)**.
+   * For the best performance, open the **Properties** window for the NDI source, scroll down to **Latency Mode** and change it to **Lowest (unbuffered)**.
 
 **Tips**
 * If you want to overlay the screen over your webcam or other video sources:
@@ -95,6 +95,7 @@ Touch Designer includes support for NDI 5 out of the box in versions 2022.20000 
 2. If you get a firewall prompt (Windows) allow TD to contact devices on the local network.
 3. In the properties of the **NDI In** operator, change **Source Name** to **NORNS**.
 4. You should see the norns screen inside the NDI operator. For more information, read the [NDI section in the Touch Designer user guide](https://derivative.ca/UserGuide/NDI).
+5. Optional: to mimic the norns screen appearance, on the **NDI In** operator, set **Common > Viewer smoothness** to **Nearest Pixel**.
 
 ## Mobile devices
 

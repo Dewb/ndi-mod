@@ -33,7 +33,7 @@ Alternatives to NDI include RTMP, HLS, or SRT; those may be better for certain p
 
 1. From the maiden console, enter:
    ```
-   ;install https://github.com/Dewb/ndi-mod/releases/download/latest/ndi-mod.zip
+   ;install https://github.com/Dewb/ndi-mod/releases/latest/download/ndi-mod.zip
    ```
 2. In the norns menu, navigate to to **SYSTEM > MODS**, scroll to **NDI-MOD**, and turn enc 3
    clockwise to add a `+` next to the mod name. Hit button 2 to back out, and select
