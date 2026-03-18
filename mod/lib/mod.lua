@@ -7,10 +7,12 @@ mod.hook.register("system_post_startup", "ndi-system-post-startup", function()
   ndi_mod = require 'ndi_mod'
 
   ndi_mod.init()
+  ndi_mod.init_audio()
   ndi_mod.start()
 end)
 
 mod.hook.register("system_pre_shutdown", "ndi-system-pre-shutdown", function()
+  ndi_mod.cleanup_audio()
   ndi_mod.cleanup()
 end)
 
