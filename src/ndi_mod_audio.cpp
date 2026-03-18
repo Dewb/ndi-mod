@@ -1,16 +1,14 @@
 #include "ndi_mod_audio.h"
+#include "ndi_mod.h"
 
 #include <iostream>
 #include <map>
 #include <vector>
-#include <cstring>
-#include <string>
 
 #include <jack/jack.h>
 
 extern "C" {
 #include "hardware/screen.h"
-#include <cairo.h>
 }
 
 #include <Processing.NDI.Lib.h>
@@ -19,7 +17,7 @@ extern "C" {
    std::cerr << "ndi-mod_audio: " << contents << "\n"
 
 // from ndi_mod.cpp
-extern std::map<cairo_surface_t*, NDIlib_send_instance_t> surface_sender_map;
+extern std::map<cairo_surface_t*, SenderRecord> surface_sender_map;
 extern bool running;
 
 // jack audio
@@ -102,7 +100,7 @@ void initialize_jack(const char** output_ports, int channel_count) {
         cairo_surface_t* surface = cairo_get_target(ctx);
         auto it = surface_sender_map.find(surface);
         if (it != surface_sender_map.end()) {
-            ndi_audio_sender = it->second;
+            ndi_audio_sender = it->second.sender;
         }
     }
 
